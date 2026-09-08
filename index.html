@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teknik ve Proje Kulübü Değerlendirme Sınavı</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- APP HEADER -->
+    <header class="app-header">
+        <div class="header-brand">
+            <span class="spike-logo-badge">THUNDER ⚡ BOTS</span>
+            <h1>Teknik ve Proje Kulübü Değerlendirme Sınavı</h1>
+        </div>
+        <div class="header-student-info">
+            <div id="studentPill" class="student-pill" style="display: none;">
+                <span class="user-icon">👤</span>
+                <span id="studentInfoText"></span>
+            </div>
+            <button id="btnToggleSimulator" class="btn-header-sim" title="2D Robotik Simülatörünü Aç/Kapat">
+                🤖 Simülatör
+            </button>
+            <div id="teacherTestBanner" class="teacher-test-banner" style="display: none;">
+                <span class="test-mode-badge">🧪 Öğretmen Test Modu</span>
+                <button id="btnReturnToTeacherDashboard" class="btn-return-teacher" title="Öğretmen Yönetim Paneline Dön">
+                    ⚙️ Öğretmen Paneli
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="main-container">
+        <!-- SOL SIDEBAR (KATEGORİ İKONLARI) -->
+        <aside class="sidebar-categories" id="categorySidebar">
+            <!-- Dynamic Category Buttons (Rendered via JS) -->
+        </aside>
+
+        <!-- BLOK ÇEKMECESİ (DRAWER) -->
+        <section class="blocks-drawer" id="blocksDrawer">
+            <div class="drawer-header">
+                <div class="drawer-title-group">
+                    <h3 id="drawerTitle">Motorlar</h3>
+                    <span class="drawer-subtitle">Sürükleyip çalışma alanına bırakın</span>
+                </div>
+                <button id="btnCloseBlocksDrawer" class="btn-close-drawer" title="Blok Panelini Kapat">✕</button>
+            </div>
+            <div class="drawer-content" id="drawerContent">
+                <!-- Dynamic Blocks / Buttons (Rendered via JS) -->
+            </div>
+        </section>
+
+        <!-- KODLAMA VE SORU ALANI (WORKSPACE) -->
+        <section class="workspace-area">
+            <!-- SORU BİLGİSİ BANNERI -->
+            <div class="question-banner" id="questionBanner">
+                <div class="question-meta">
+                    <div class="meta-left">
+                        <span class="badge-question-num" id="questionBadge">Soru 1 / 8</span>
+                        <h2 id="questionTitle">1. Soru: Robotun Hareket Rotası</h2>
+                    </div>
+                    <div class="meta-right">
+                        <button id="btnToggleBanner" class="btn-banner-toggle" title="Yönergeyi Daralt / Genişlet">
+                            <span id="btnToggleBannerIcon">🔼</span> <span id="btnToggleBannerText">Yönergeyi Gizle</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GENİŞLETİLEBİLİR / DARALTILABİLİR YÖNERGE İÇERİĞİ -->
+                <div id="questionDetailsContent" class="question-details-content">
+                    <p id="questionDesc" class="question-desc">
+                        Aşağıda verilen komutların kodlamasını yapınız:<br>
+                        • Robot 10 santimetre ileriye gitsin.<br>
+                        • 90 derece sağa dönsün.<br>
+                        • 20 santimetre geriye gitsin.<br>
+                        • Kodlamayı bitir.
+                    </p>
+
+                    <!-- PORT HARİTASI BILGISI -->
+                    <div class="hardware-port-map" id="hardwarePortMap">
+                        <span class="port-map-title">📍 PORT HARİTASI:</span>
+                        <div class="port-chip-group">
+                            <div class="port-chip"><span class="port-badge bg-pink">A</span> <span class="port-label">Büyük Motor</span></div>
+                            <div class="port-chip"><span class="port-badge bg-pink">B</span> <span class="port-label">Büyük Motor</span></div>
+                            <div class="port-chip"><span class="port-badge bg-blue">C</span> <span class="port-label">Küçük Motor</span></div>
+                            <div class="port-chip"><span class="port-badge bg-blue">D</span> <span class="port-label">Küçük Motor</span></div>
+                            <div class="port-chip"><span class="port-badge bg-teal">E</span> <span class="port-label">Renk Sensörü</span></div>
+                            <div class="port-chip"><span class="port-badge bg-teal">F</span> <span class="port-label">Renk Sensörü</span></div>
+                        </div>
+                    </div>
+
+                    <!-- KODLAMAYA BAŞLAMA & SİMÜLATÖR EYLEMLERİ -->
+                    <div class="banner-actions-row">
+                        <button id="btnStartCodingNow" class="btn-start-coding" title="Yönergeyi daraltıp kod tuvaline odaklan">
+                            ✍️ Yönergeyi Okudum, Kodlamaya Başla ➡
+                        </button>
+                        <button id="btnOpenSimFromBanner" class="btn-pulse-sim" style="display: none;">
+                            🤖 2D Robotik Simülatör Test Pistini Aç ➡
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CANVAS / DROP AREA -->
+            <div class="canvas-container" id="canvasContainer">
+                <div class="canvas-grid-bg"></div>
+
+                <!-- SILME ALANI (TRASH ZONE) -->
+                <div id="trashZone" class="trash-zone">
+                    🗑️ Bloğu Silmek İçin Buraya Bırakın
+                </div>
+
+                <!-- ANA YIĞIN CONTAINER -->
+                <div id="blockDropList" class="block-drop-list">
+                    <!-- FIXED HAT BLOCK -->
+                    <div class="block-stack" id="mainBlockStack">
+                        <div class="spike-block hat-block" data-block-id="evt_start" draggable="false">
+                            <span class="play-icon">▶</span>
+                            <span>program başladığında</span>
+                        </div>
+                    </div>
+
+                    <!-- EMPTY PLACEHOLDER WITH CLEAR GUIDANCE -->
+                    <div id="emptyPlaceholder" class="empty-drop-placeholder">
+                        <span class="arrow">💡</span>
+                        <div class="placeholder-text-group">
+                            <strong>Nasıl Kodlama Yapılır?</strong><br>
+                            • Sol panelden blokları sürükleyip <b>"program başladığında"</b> bloğunun altına dizebilirsiniz.<br>
+                            • Dilerseniz <b>Olay</b> veya <b>Özel blokları</b> çalışma alanının boş bir yerine bırakarak <b>yan yana yeni kod yığınları</b> oluşturabilirsiniz.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MANTIK VE KAĞIT ÜZERİNDE ÇÖZÜM YANIT KARTI (SORU 3 VE 4 İÇİN) -->
+                <div id="paperAnswerContainer" class="paper-answer-container" style="display: none;">
+                    <div class="paper-card">
+                        <div class="paper-card-header">
+                            <span class="paper-badge">📐 MANTIK & MUHAKEME ÇÖZÜMÜ</span>
+                            <h3>Cevap Giriş Alanı</h3>
+                        </div>
+                        <div class="paper-card-tip">
+                            💡 <b>Yönerge:</b> Lütfen bu soruyu <b>size verilen boş kağıda</b> çözünüz. Bulduğunuz net sonucu aşağıdaki kutucuğa yazınız.
+                        </div>
+                        <div class="paper-input-group">
+                            <label for="inputPaperAnswer">Cevabınız (Sayı veya Sonuç):</label>
+                            <input type="text" id="inputPaperAnswer" class="paper-input" placeholder="Cevabınızı buraya yazınız..." autocomplete="off">
+                        </div>
+                        <div class="paper-status" id="paperSaveStatus" style="display: none;">
+                            ✓ Yanıtınız anında kaydedildi.
+                        </div>
+                        <div class="paper-card-actions" style="margin-top: 14px;">
+                            <button type="button" id="btnPaperNextQuestion" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; font-size: 0.95rem;">
+                                💾 Kaydet ve Sıradaki Soruya Geç ➡
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WORKSPACE FOOTER CONTROLS -->
+            <footer class="workspace-footer">
+                <div class="footer-left">
+                    <button id="btnClearCanvas" class="btn btn-outline" title="Çalışma Alanındaki Kodları Temizle">
+                        🗑️ Temizle
+                    </button>
+                </div>
+                <div class="footer-right">
+                    <button id="btnPrevQuestion" class="btn btn-outline" disabled>
+                        ⬅ Önceki
+                    </button>
+                    <button id="btnNextQuestion" class="btn btn-primary" title="Cevabı kaydet ve sıradaki soruya geç">
+                        💾 Kaydet & Sonraki ➡
+                    </button>
+                    <button id="btnFinishExam" class="btn btn-success" style="display: none;" title="Sınavı bitir ve tüm sonuçları öğretmene gönder">
+                        🚀 Sınavı Tamamla ve Gönder
+                    </button>
+                </div>
+            </footer>
+        </section>
+
+        <!-- 2D ROBOTİK SİMÜLASYON PANELİ (OPEN ROBERTA ESİNTİLİ) -->
+        <aside class="sim-drawer" id="simDrawer">
+            <div class="sim-drawer-header">
+                <div class="sim-header-title">
+                    <span class="sim-brand-icon">🤖</span>
+                    <div class="sim-title-group">
+                        <h3>2D Robot Simülatörü</h3>
+                        <span class="sim-sub">Sanal SPIKE Test Pisti</span>
+                    </div>
+                </div>
+                <div class="sim-header-actions">
+                    <select id="simTrackSelect" class="sim-track-select">
+                        <option value="q7">7. Soru Parkuru (Rota Takibi)</option>
+                        <option value="q8">8. Soru Parkuru (Renk Şeritleri)</option>
+                        <option value="free">Açık Parkur (Serbest)</option>
+                    </select>
+                    <button id="btnCloseSimulator" class="btn-close-sim" title="Paneli Kapat">✕</button>
+                </div>
+            </div>
+
+            <!-- CANVASI VE GÖREV BİLGİSİ -->
+            <div class="sim-canvas-wrapper">
+                <canvas id="simCanvas" width="480" height="380"></canvas>
+                <div class="sim-canvas-overlay-badge badge-default" id="simMissionBadge">Hazır</div>
+            </div>
+
+            <!-- CANLI SENSÖR & TELEMETRİ GÖSTERGESİ (HUD) -->
+            <div class="sim-telemetry-panel">
+                <div class="telemetry-card">
+                    <span class="telemetry-label">🎨 Renk Sensörü:</span>
+                    <span class="telemetry-pill" id="simPillColor">Beyaz</span>
+                </div>
+                <div class="telemetry-card">
+                    <span class="telemetry-label">🧭 Yön Açısı:</span>
+                    <span class="telemetry-val" id="simTxtHeading">0°</span>
+                </div>
+                <div class="telemetry-card">
+                    <span class="telemetry-label">⚙️ Motor Durumu:</span>
+                    <span class="telemetry-val" id="simTxtMotors">Duruyor ⏹</span>
+                </div>
+            </div>
+
+            <!-- SİMÜLATÖR KONTROL BUTONLARI -->
+            <div class="sim-footer-controls">
+                <!-- 3 SİMÜLASYON HAKKI GÖSTERGESİ -->
+                <div class="sim-attempts-indicator" id="simAttemptsIndicator">
+                    <span class="attempts-label">🎯 Kalan Simülasyon Hakkı:</span>
+                    <span class="attempt-pill pill-green" id="simAttemptsBadge">3 / 3 Hak</span>
+                </div>
+                <button id="btnSimPlay" class="btn btn-sim-play" title="Kodu Robot Üzerinde Test Et (Toplam 3 Deneme Hakkı)">
+                    ▶ Kodu Simüle Et <span class="sim-attempts-tag" id="btnSimAttemptsTag">(3/3 Hak)</span>
+                </button>
+                <div class="sim-controls-sub-row">
+                    <button id="btnSimReset" class="btn btn-outline btn-sim-reset" title="Robotu Başlangıç Noktasına Al">
+                        🔄 Başa Al
+                    </button>
+                    <button id="btnSimSnapshot" class="btn btn-outline btn-sim-snapshot" title="Pistin Ekran Görüntüsünü Al">
+                        📸 Fotoğraf
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- 1. ANA GİRİŞ VE ROL SEÇİMİ MODALI (ÖĞRENCİ / ÖĞRETMEN) -->
+    <div id="modalStudentEntry" class="modal-overlay">
+        <div class="modal-card modal-auth-card">
+            <div class="modal-header">
+                <span class="modal-badge">THUNDER ⚡ BOTS DEĞERLENDİRME PLATFORMU</span>
+                <h2>Teknik ve Proje Kulübü Değerlendirme Sınavı</h2>
+                <p>Lütfen devam etmek için giriş türünüzü seçiniz.</p>
+            </div>
+
+            <!-- ROL GEÇİŞ SEKMELERİ -->
+            <div class="auth-role-tabs">
+                <button type="button" id="tabStudentRole" class="auth-tab-btn active">
+                    🎒 Öğrenci Girişi
+                </button>
+                <button type="button" id="tabTeacherRole" class="auth-tab-btn">
+                    🎓 Öğretmen Girişi
+                </button>
+            </div>
+
+            <!-- 1. ÖĞRENCİ GİRİŞ PANELİ -->
+            <div id="panelStudentAuth" class="auth-role-panel">
+                <form id="formStudentEntry">
+                    <div class="form-group">
+                        <label for="inputStudentName">Öğrenci Ad Soyad:</label>
+                        <input type="text" id="inputStudentName" placeholder="Örn: Ahmet Yılmaz" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputStudentClass">Sınıf / Şube:</label>
+                        <input type="text" id="inputStudentClass" placeholder="Örn: 6A" required autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" style="padding: 13px; font-weight: 700; font-size: 0.95rem;">
+                        🚀 Sınava Başla
+                    </button>
+                </form>
+            </div>
+
+            <!-- 2. ÖĞRETMEN GİRİŞ VE YÖNETİM PANELİ -->
+            <div id="panelTeacherAuth" class="auth-role-panel" style="display: none;">
+                <!-- DURUM A: ŞİFRE GİRİŞİ (Bu Tarayıcıda İlk Kez Giriş Yapılıyorsa) -->
+                <div id="teacherPasswordSection" style="display: none;">
+                    <form id="formTeacherPassword">
+                        <div class="form-group">
+                            <label for="inputTeacherPassword">Öğretmen Güvenlik Şifresi:</label>
+                            <input type="password" id="inputTeacherPassword" placeholder="Şifrenizi giriniz" autocomplete="current-password">
+                        </div>
+                        <div id="teacherPasswordError" class="auth-error-msg" style="display: none;">
+                            ⚠️ Hatalı öğretmen şifresi! Lütfen tekrar deneyiniz.
+                        </div>
+                        <div class="auth-hint-box">
+                            💡 <b>Kalıcı Giriş:</b> Bu tarayıcıda şifreyi bir kez girdiğinizde sistem sizi hatırlayacak ve sonraki girişlerinizde tekrar şifre istemeyecektir.
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" style="padding: 12px; font-weight: 700; background-color: #4f46e5; border: none;">
+                            🔑 Öğretmen Paneline Giriş Yap
+                        </button>
+                    </form>
+                </div>
+
+                <!-- DURUM B: DOĞRULANMIŞ ÖĞRETMEN YÖNETİM PANELİ -->
+                <div id="teacherDashboardSection" style="display: none;">
+                    <div class="teacher-auth-header">
+                        <span class="auth-success-badge">✓ Öğretmen Oturumu Açık</span>
+                        <button type="button" id="btnTeacherLogout" class="btn-logout-teacher" title="Bu tarayıcıdaki kayıtlı şifreyi silip çıkış yap">
+                            🚪 Çıkış Yap / Şifreyi Unut
+                        </button>
+                    </div>
+
+                    <div class="teacher-actions-grid">
+                        <!-- 1. SİSTEMİ ÖĞRENCİ OLARAK DENE -->
+                        <div class="teacher-action-card highlight-card">
+                            <div class="action-card-header">
+                                <span class="action-card-icon">🧪</span>
+                                <div>
+                                    <h4>Öğrenci Olarak Sistemi Dene</h4>
+                                    <p>Otomatik profil oluşturup sistemi gerçek bir öğrenci gözüyle test edin.</p>
+                                </div>
+                            </div>
+                            <div class="demo-options-row">
+                                <label class="demo-checkbox-label">
+                                    <input type="checkbox" id="chkSkipWiringInDemo" checked>
+                                    <span>Kablo bağlantı testini otomatik geç (Doğrudan 1. soruya başla)</span>
+                                </label>
+                            </div>
+                            <button type="button" id="btnLaunchTeacherDemo" class="btn btn-demo-launch">
+                                🚀 Test Öğrencisi Olarak Sınava Başla ➡
+                            </button>
+                        </div>
+
+                        <!-- 2. SİSTEM VE E-TABLO AYARLARI -->
+                        <div class="teacher-action-card">
+                            <div class="action-card-header">
+                                <span class="action-card-icon">⚙️</span>
+                                <div>
+                                    <h4>Google E-Tablo Webhook Ayarı</h4>
+                                    <p>Öğrenci sınav yanıtlarının gönderildiği bağlantı URL'si.</p>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <input type="text" id="inputTeacherWebhookUrl" class="webhook-input" placeholder="https://script.google.com/macros/s/.../exec">
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" id="btnSaveWebhookUrl" class="btn btn-outline btn-sm">
+                                    💾 URL'yi Kaydet
+                                </button>
+                                <button type="button" id="btnTestWebhookUrl" class="btn btn-outline btn-sm">
+                                    🔗 Bağlantıyı Test Et
+                                </button>
+                            </div>
+                            <div id="webhookStatusMsg" class="webhook-status-text" style="display: none;"></div>
+                        </div>
+
+                        <!-- 3. ÖĞRENCİ KOD İNCELEME & SİMÜLATÖR -->
+                        <div class="teacher-action-card">
+                            <div class="action-card-header">
+                                <span class="action-card-icon">🔍</span>
+                                <div>
+                                    <h4>Öğrenci Kodunu Canlı İncele</h4>
+                                    <p>Google E-Tablo'dan kopyalanan JSON kod verisini tuvale aktarın.</p>
+                                </div>
+                            </div>
+                            <button type="button" id="btnOpenCodeInspectorModal" class="btn btn-outline" style="width: 100%; font-weight: 600; font-size: 0.85rem;">
+                                📂 Kod İnceleme Penceresini Aç
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. DONANIM VE KABLO BAĞLANTI SİMÜLASYONU MODALI (ADIM ADIM YÖNERGELİ) -->
+    <div id="modalHardwareSetup" class="modal-overlay" style="display: none;">
+        <div class="modal-card modal-lg" style="max-width: 860px;">
+            <div class="modal-header">
+                <span class="modal-badge">DONANIM VE PORT BAĞLANTI KURULUMU</span>
+                <h2>Robotik Donanım Parçalarını Bağlayınız 🔌</h2>
+                <p>Lütfen aşağıdaki yönergeyi takip ederek motor ve sensör kablolarını Hub üzerindeki portlara takınız.</p>
+            </div>
+
+            <!-- CANLI VE GÖZE ÇARPAN YÖNERGE KARTI -->
+            <div class="hero-instruction-card" id="heroInstructionCard">
+                <div class="hero-step-badge" id="heroStepBadge">ADIM 1 / 6</div>
+                <div class="hero-instruction-text" id="wiringStepInstruction">
+                    👉 Lütfen <b>Büyük Motor</b> parçasını seçip Hub üzerindeki <b>A</b> portuna bağlayınız.
+                </div>
+            </div>
+
+            <!-- SIMULATOR INTERACTIVE CONTAINER -->
+            <div class="wiring-sim-container">
+                <!-- SPIKE PRIME HUB BOX -->
+                <div class="spike-hub-box">
+                    <div class="hub-ports-left">
+                        <button class="port-btn" id="btnPortA" data-port="A">A ⚡</button>
+                        <button class="port-btn" id="btnPortC" data-port="C">C ⚡</button>
+                        <button class="port-btn" id="btnPortE" data-port="E">E ⚡</button>
+                    </div>
+
+                    <div class="hub-center-screen">
+                        <div class="hub-matrix">
+                            <div class="led-dot"></div><div class="led-dot"></div><div class="led-dot"></div>
+                            <div class="led-dot"></div><div class="led-dot" style="background:#0284c7;"></div><div class="led-dot"></div>
+                            <div class="led-dot"></div><div class="led-dot"></div><div class="led-dot"></div>
+                        </div>
+                        <span class="hub-label-text">SPIKE HUB</span>
+                    </div>
+
+                    <div class="hub-ports-right">
+                        <button class="port-btn" id="btnPortB" data-port="B">⚡ B</button>
+                        <button class="port-btn" id="btnPortD" data-port="D">⚡ D</button>
+                        <button class="port-btn" id="btnPortF" data-port="F">⚡ F</button>
+                    </div>
+                </div>
+
+                <!-- DONANIM PARÇALARI PANELİ -->
+                <div class="wiring-tools-panel">
+                    <div class="tool-title">📌 Bağlanacak Donanım Parçasını Seçiniz:</div>
+                    <div class="tool-items">
+                        <div class="tool-card tool-pink" data-type="big_motor">
+                            <span class="tool-icon">⚙️</span>
+                            <span class="tool-name">Büyük Motor (Hareket)</span>
+                        </div>
+                        <div class="tool-card tool-blue" data-type="small_motor">
+                            <span class="tool-icon">🔌</span>
+                            <span class="tool-name">Küçük Motor (Eklenti / Kol)</span>
+                        </div>
+                        <div class="tool-card tool-teal" data-type="color_sensor">
+                            <span class="tool-icon">👁️</span>
+                            <span class="tool-name">Renk Sensörü</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GEÇERLİLİK UYARISI VEYA BAŞLAMA BUTTONU -->
+            <div id="simFeedback" class="sim-feedback-box" style="display: none;"></div>
+
+            <button id="btnStartExamFromSim" class="btn btn-success btn-block" style="display: none; margin-top: 14px; padding: 14px; font-size: 1.05rem;">
+                🚀 Kodlama Sınavına Başla ➡
+            </button>
+
+            <!-- GİZLİ MİNİMAL SON ÇARE ATLA BUTONU -->
+            <div style="text-align: center; margin-top: 18px;">
+                <button id="btnSkipWiringSim" style="background: transparent; border: 1px solid #fca5a5; color: #ef4444; font-size: 0.72rem; font-weight: 600; padding: 5px 12px; border-radius: 8px; cursor: pointer; opacity: 0.7; transition: all 0.2s ease;" onmouseover="this.style.opacity='1'; this.style.backgroundColor='#fef2f2';" onmouseout="this.style.opacity='0.7'; this.style.backgroundColor='transparent';">
+                    ⚠️ Sorun yaşıyorum, bu kısmı geçmek istiyorum. Port bağlamayı atla.
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. ÖZEL BLOK OLUŞTURMA MODALI (BLOKLARIM) -->
+    <div id="modalCustomBlock" class="modal-overlay" style="display: none;">
+        <div class="modal-card modal-custom-block">
+            <div class="custom-block-header">
+                <h3>Bir Blok Oluştur</h3>
+                <button id="btnCloseCustomBlockModal" class="btn-close-modal">✕</button>
+            </div>
+            
+            <div class="custom-block-preview-area">
+                <div class="preview-block-pink" id="previewCustomBlock">
+                    <input type="text" id="inputCustomBlockName" value="blok adı" placeholder="blok adı">
+                </div>
+            </div>
+
+            <div class="custom-block-options">
+                <div class="custom-option-card" id="btnAddNumInput">
+                    <div class="option-icon icon-circle">1</div>
+                    <span class="option-title">girdi ekle</span>
+                    <span class="option-sub">sayı</span>
+                </div>
+                <div class="custom-option-card" id="btnAddBoolInput">
+                    <div class="option-icon icon-diamond">◇</div>
+                    <span class="option-title">girdi ekle</span>
+                    <span class="option-sub">mantıksal</span>
+                </div>
+                <div class="custom-option-card" id="btnAddTextLabel">
+                    <div class="option-icon icon-text">T</div>
+                    <span class="option-title">etiket ekle</span>
+                    <span class="option-sub">metin</span>
+                </div>
+            </div>
+
+            <div class="custom-block-footer">
+                <button id="btnCancelCustomBlock" class="btn btn-outline">İptal</button>
+                <button id="btnSaveCustomBlock" class="btn btn-primary" style="background-color: #ff5577; border: none;">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. SINAV TAMAMLANDI / TEŞEKKÜR MODALI (ÖĞRENCİ ARAYÜZÜ) -->
+    <div id="modalExamResults" class="modal-overlay" style="display: none;">
+        <div class="modal-card" style="text-align: center; max-width: 480px; padding: 36px 28px;">
+            <div style="font-size: 3.5rem; margin-bottom: 12px;">🎉</div>
+            <h2 style="font-family: var(--font-display); font-size: 1.5rem; color: #0f172a; margin-bottom: 8px;">
+                Sınavınız Başarıyla İletilmiştir!
+            </h2>
+            <p id="studentSuccessMsg" style="font-size: 0.95rem; color: #475569; margin-bottom: 24px; line-height: 1.5;">
+                Tebrikler! Sınav yanıtlarınız öğretmeninize başarıyla ulaştırılmıştır.
+            </p>
+            <button id="btnReturnToStart" class="btn btn-primary btn-block" style="padding: 14px; font-size: 1rem; font-weight: 700; border-radius: 12px; background-color: #10b981; border: none;">
+                Tamam
+            </button>
+        </div>
+    </div>
+
+    <!-- 5. ÖĞRETMEN İNCELEME & REPLAY MODALI -->
+    <div id="modalTeacherReview" class="modal-overlay" style="display: none;">
+        <div class="modal-card modal-lg" style="max-width: 660px;">
+            <div class="modal-header">
+                <span class="modal-badge" style="background:#e0e7ff; color:#4338ca;">ÖĞRETMEN İNCELEME PANELİ</span>
+                <h2>Öğrenci Kodunu Yükle ve Canlı İncele 🎓</h2>
+                <p>Google E-Tablo'dan kopyaladığınız öğrenci kod verisini (JSON) veya aktif sınavdaki öğrencinin yanıtını yükleyip simülatörde canlı izleyebilirsiniz.</p>
+            </div>
+            <div class="teacher-modal-body" style="display:flex; flex-direction:column; gap:12px; margin: 16px 0;">
+                <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+                    <button id="btnTeacherLoadCurrent" class="btn btn-outline" style="flex:1; min-width: 200px; font-weight: 600;">
+                        📥 Aktif Öğrencinin Kodunu Al
+                    </button>
+                    <button id="btnTeacherCaptureWorkspace" class="btn btn-outline" style="flex:1; min-width: 200px; font-weight: 600;">
+                        📸 Simülatör Görüntüsünü İndir (PNG)
+                    </button>
+                </div>
+                <label style="font-size:0.85rem; font-weight:700; color:#334155; margin-top: 6px;">Veya Öğrenci Kod Verisini (JSON / Metin) Yapıştırınız:</label>
+                <textarea id="teacherCodeInput" rows="6" placeholder='[{"stackId":"main","blocks":[{"id":"mov_move_dir","inputs":{"dir":"↑","val":"10","unit":"cm"}}, ...]}]' style="width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-family:monospace; font-size:0.8rem; resize:vertical; box-sizing:border-box; background:#f8fafc;"></textarea>
+                <div id="teacherFeedback" style="font-size:0.85rem; font-weight:600; color:#10b981; display:none;"></div>
+            </div>
+            <div class="custom-block-footer" style="display:flex; justify-content:flex-end; gap:10px;">
+                <button id="btnCloseTeacherModal" class="btn btn-outline">Kapat</button>
+                <button id="btnTeacherApplyAndSim" class="btn btn-primary" style="background:#4f46e5; border:none; padding: 10px 18px;">
+                    🚀 Tuvale Yükle ve Simüle Et
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÖĞRENCİ KOD GÖNDERİM BİLDİRİM TOASTI -->
+    <div id="studentToast" class="student-toast" style="display: none;">
+        <span class="toast-icon">🎉</span>
+        <div class="toast-content">
+            <h4 id="toastTitle">Kodunuz Gönderildi!</h4>
+            <p id="toastMessage">Soru yanıtınız öğretmeninize başarıyla iletildi.</p>
+        </div>
+        <button id="btnCloseToast" class="btn-close-toast" title="Bildirimi Kapat">✕</button>
+    </div>
+
+    <!-- JS Logic -->
+    <script src="blocks-data.js"></script>
+    <script src="simulator-engine.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
