@@ -4,12 +4,16 @@
  */
 
 // ⚠️ E-TABLO BAĞLANTI AYARLARI VE ÖĞRETMEN YÖNETİMİ
-const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby1Rmf68HTGJe6_RJng_dlKKZRUj6snpG6x9WduL66v6fDLQophJ6ZDSy2SUWxAbrVq/exec';
+const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwwYemot6z9x-89yF04jo5PiecuYKVfLwdymTTUzXviyg0Ol7gFJqUptfo3wOsar_PF/exec';
 const TEACHER_MASTER_PASSWORD = '26575982824.bati';
 const STORAGE_TEACHER_LOGGED = 'spike_teacher_authenticated';
 
 function getGoogleSheetWebhookUrl() {
-    return localStorage.getItem('spike_webhook_url') || DEFAULT_GOOGLE_SHEET_WEBHOOK_URL;
+    const customUrl = localStorage.getItem('spike_webhook_url');
+    if (customUrl && customUrl.includes('AKfycbwwYemot6z9x')) {
+        return customUrl;
+    }
+    return DEFAULT_GOOGLE_SHEET_WEBHOOK_URL;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -879,11 +883,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (!currentDraggedBlock) return;
 
+                    const afterElement = getDragAfterElement(zone, e.clientY);
+                    let newEl = null;
+
                     if (currentDraggedBlock.isTemplate) {
-                        const newBlock = createBlockElement(currentDraggedBlock.bDef, false);
-                        zone.appendChild(newBlock);
+                        newEl = createBlockElement(currentDraggedBlock.bDef, false);
                     } else {
-                        zone.appendChild(currentDraggedBlock.element);
+                        newEl = currentDraggedBlock.element;
+                    }
+
+                    if (newEl) {
+                        if (afterElement) {
+                            zone.insertBefore(newEl, afterElement);
+                        } else {
+                            zone.appendChild(newEl);
+                        }
                     }
 
                     updatePlaceholderVisibility();
@@ -1103,6 +1117,21 @@ document.addEventListener('DOMContentLoaded', () => {
         saveCurrentQuestionState();
     }
 
+    // HELPER: CALCULATE INSERTION INDEX FOR DRAG REORDERING IN STACKS
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll(':scope > .instance-block:not(.dragging)')];
+
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
     // HELPER: CREATE A NEW INDEPENDENT STACK CONTAINER ON CANVAS
     function createNewStackContainer(stackId, titleText) {
         const stackBox = document.createElement('div');
@@ -1135,17 +1164,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!currentDraggedBlock) return;
 
+            const afterElement = getDragAfterElement(stackBox, e.clientY);
+            let targetEl = null;
+
             if (currentDraggedBlock.isTemplate) {
                 const bDef = currentDraggedBlock.bDef;
                 // If dropping an Event Hat Block, spawn a new stack for it!
                 if (bDef.type === 'hat') {
                     spawnNewEventHatStack(bDef);
+                    return;
                 } else {
-                    const newBlock = createBlockElement(bDef, false);
-                    stackBox.appendChild(newBlock);
+                    targetEl = createBlockElement(bDef, false);
                 }
             } else {
-                stackBox.appendChild(currentDraggedBlock.element);
+                targetEl = currentDraggedBlock.element;
+            }
+
+            if (targetEl) {
+                if (afterElement) {
+                    stackBox.insertBefore(targetEl, afterElement);
+                } else {
+                    stackBox.appendChild(targetEl);
+                }
             }
 
             updatePlaceholderVisibility();
@@ -1178,16 +1218,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.stopPropagation();
                 if (!currentDraggedBlock) return;
 
+                const afterElement = getDragAfterElement(mainBlockStack, e.clientY);
+                let targetEl = null;
+
                 if (currentDraggedBlock.isTemplate) {
                     const bDef = currentDraggedBlock.bDef;
                     if (bDef.type === 'hat') {
                         spawnNewEventHatStack(bDef);
+                        return;
                     } else {
-                        const newBlock = createBlockElement(bDef, false);
-                        mainBlockStack.appendChild(newBlock);
+                        targetEl = createBlockElement(bDef, false);
                     }
                 } else {
-                    mainBlockStack.appendChild(currentDraggedBlock.element);
+                    targetEl = currentDraggedBlock.element;
+                }
+
+                if (targetEl) {
+                    if (afterElement) {
+                        mainBlockStack.insertBefore(targetEl, afterElement);
+                    } else {
+                        mainBlockStack.appendChild(targetEl);
+                    }
                 }
 
                 updatePlaceholderVisibility();
