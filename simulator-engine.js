@@ -675,12 +675,11 @@
             // 1. HAREKET (Movement) BLOKLARI
             const isMovementBlock = (id === 'mov_move_dir' || id === 'mov_move_steer_dist' || id === 'mov_start_moving_dir' || id === 'mov_start_steer_only');
             if (isMovementBlock) {
-                // DONANIM KONTROLÜ: Hareket motorları (A+B) ayarlanmamışsa robot fiziksel olarak hareket etmez.
-                // Kopya / ipucu olmaması için öğrenciye motor uyarısı verilmez, robot hareket etmeden blok tamamlanır.
-                const isPairValid = (this.state.movementMotors === 'A+B' || this.state.movementMotors === 'B+A');
-                if (!isPairValid) {
-                    await new Promise(r => setTimeout(r, 200));
-                    return;
+                // DONANIM KONTROLÜ: Hareket motorları (A+B) girilmese de simüle edebilsin (Öğretmen puan kırar).
+                if (!this.state.movementMotors) {
+                    this.state.movementMotors = 'A+B';
+                    this.state.activatedMotors['A'] = true;
+                    this.state.activatedMotors['B'] = true;
                 }
 
                 if (id === 'mov_move_dir') {

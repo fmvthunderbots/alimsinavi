@@ -727,8 +727,8 @@ const DEFAULT_QUESTIONS = [
     {
         id: 'q4',
         type: 'paper_input',
-        title: '4. Soru: Periyodik Döngü ve Zaman Problemi',
-        description: 'Akıllı bir keşif robotu düz bir hatta 0 noktasından başlayarak ileriye doğru gidecektir. Robotun döngüsel hareket algoritması şöyledir:\n• 4 adım ileri gider,\n• 1 adım geri gelir,\n• Ardından 1 saniye mola verir ve aynı döngüyü baştan tekrarlar.\n\nRobotun her 1 adımı tam 1 saniye sürmektedir.\n\nSORU: Bu robotun başlangıç noktasından 25 adım ileriye İLK KEZ ulaştığı anda, başlangıçtan itibaren geçen toplam süre (mola süreleri dahil) kaç saniyedir?'
+        title: '4. Soru: Akıllı Sepet Dağıtım Algoritması (Durum Mantığı)',
+        description: 'Bir fabrika robotu konveyör banttan geçen renkli paketleri 3 farklı sepete (A, B ve C) şu kurallara göre dağıtmaktadır:\n• 1. Kural: Eğer paket KIRMIZI ise doğrudan A sepetine atılır.\n• 2. Kural: Eğer paket MAVİ ise; A sepetindeki paket sayısı B sepetinden FAZLA ise B sepetine, değilse C sepetine atılır.\n• 3. Kural: Eğer paket YEŞİL ise en az paketin olduğu sepete atılır. (Eşitlik durumunda öncelik sırası A > B > C şeklindedir).\n\nBanttan sırasıyla şu 8 paket geçmektedir:\n1.Kırmızı ➔ 2.Mavi ➔ 3.Yeşil ➔ 4.Mavi ➔ 5.Kırmızı ➔ 6.Yeşil ➔ 7.Mavi ➔ 8.Yeşil\n\nSORU:\na) Tüm paketler dağıtıldıktan sonra A, B ve C sepetlerinde sırasıyla kaçar paket birikir? (Örn: A:3, B:2, C:3)\nb) 8. paket (son Yeşil paket) hangi sepete atılmıştır?'
     },
     {
         id: 'q5',
@@ -739,8 +739,8 @@ const DEFAULT_QUESTIONS = [
     {
         id: 'q6',
         type: 'paper_input',
-        title: '6. Soru: Akıllı Depo Robotu Sıralama Mantığı',
-        description: 'Akıllı bir depoda numaraları 1, 2, 3, 4 ve 5 olan 5 farklı kutu bulunmaktadır. Her bir kutunun ağırlığı birbirinden farklı birer tam sayıdır (kg).\nSensörlü tartı robotu bu kutulardan ikili karşılaştırmalar yapmış ve hafızasına şu bilgileri kaydetmiştir:\n1. Kutu 1, Kutu 2\'den ağırdır (1 > 2)\n2. Kutu 3, Kutu 4\'ten hafiftir (4 > 3)\n3. Kutu 2, Kutu 4\'ten ağırdır (2 > 4)\n4. Kutu 5, Kutu 1\'den ağırdır (5 > 1)\n\nSORU: Bu bilgilere göre;\na) En ağır kutudan en hafif kutuya doğru kutuların büyükten küçüğe doğru sıralaması nedir? (Örn: 5-1-2-4-3)\nb) Ortanca (3. sıradaki) kutunun numarası kaçtır?\n\n(Cevabınızı kutu sırasını veya ortanca kutuyu belirterek yazınız.)'
+        title: '6. Soru: Akıllı Depo Yük Taşıma Algoritması',
+        description: 'Bir depoda ağırlıkları 1 kg, 2 kg, 3 kg, 4 kg, 5 kg, 6 kg ve 7 kg olan 7 paket bulunmaktadır. Taşıyıcı robot bu paketleri en fazla 2 seferde üst kata taşımalıdır.\n\nRobotun taşıma kısıtlamaları:\n1. Robot her seferde en fazla 4 paket taşıyabilir.\n2. Robot her seferde en fazla 15 kg kaldırabilir.\n3. Her iki seferde taşınan toplam ağırlıklar birbirine eşit (14 kg - 14 kg) olmalıdır.\n4. 7 kg ve 1 kg\'lık paketler aynı seferde taşınmalıdır.\n5. 1. Seferde TAM 4 adet paket taşınmalıdır.\n\nSORU:\na) 1. Seferde taşınan 4 paketin ağırlıkları nelerdir? (Örn: 7-4-2-1)\nb) 2. Seferde taşınan 3 paketin ağırlıkları nelerdir? (Örn: 6-5-3)'
     },
     {
         id: 'q7',

@@ -4,13 +4,13 @@
  */
 
 // ⚠️ E-TABLO BAĞLANTI AYARLARI VE ÖĞRETMEN YÖNETİMİ
-const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwwYemot6z9x-89yF04jo5PiecuYKVfLwdymTTUzXviyg0Ol7gFJqUptfo3wOsar_PF/exec';
+const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyb6raQ5BaQ79awz9UmxpCtxDI9Lc0vBa3pDa3p8l1Y2zmkjNJxtAel1vmRF1biCAws/exec';
 const TEACHER_MASTER_PASSWORD = '26575982824.bati';
 const STORAGE_TEACHER_LOGGED = 'spike_teacher_authenticated';
 
 function getGoogleSheetWebhookUrl() {
     const customUrl = localStorage.getItem('spike_webhook_url');
-    if (customUrl && customUrl.includes('AKfycbwwYemot6z9x')) {
+    if (customUrl && customUrl.includes('AKfycbyb6raQ5BaQ79awz9UmxpCtxDI9Lc0vBa3pDa3p8l1Y2zmkjNJxtAel1vmRF1biCAws')) {
         return customUrl;
     }
     return DEFAULT_GOOGLE_SHEET_WEBHOOK_URL;
