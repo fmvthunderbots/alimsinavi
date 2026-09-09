@@ -673,7 +673,7 @@
             }
 
             // 1. HAREKET (Movement) BLOKLARI
-            const isMovementBlock = (id === 'mov_move_dir' || id === 'mov_move_steer_dist' || id === 'mov_start_moving_dir' || id === 'mov_start_steer_only');
+            const isMovementBlock = (id === 'mov_move_dir' || id === 'mov_start_moving_dir' || id === 'mov_start_dual_speed' || id === 'mov_move_steer_dist' || id === 'mov_start_steer_only');
             if (isMovementBlock) {
                 // DONANIM KONTROLÜ: Hareket motorları (A+B) girilmese de simüle edebilsin (Öğretmen puan kırar).
                 if (!this.state.movementMotors) {
@@ -689,22 +689,26 @@
                     const distCm = unit === 'tur' ? val * 17.5 : (unit === 'derece' ? (val / 360) * 17.5 : val);
                     await this.animateMove(distCm, dir === '↑');
                 }
-                else if (id === 'mov_move_steer_dist') {
-                    const steer = inputs.steer || 'sağ: 30';
-                    const val = parseFloat(inputs.val) || 10;
-                    const isRight = steer.includes('sağ');
-                    let deg = 90;
-                    if (steer.includes('30')) deg = 30;
-                    else if (steer.includes('50')) deg = 50;
-                    else if (steer.includes('90')) deg = 90;
-                    else if (steer.includes('100')) deg = 180;
-                    await this.animateRotate(deg, isRight);
-                }
                 else if (id === 'mov_start_moving_dir') {
                     const dir = inputs.dir || '↑';
                     await this.animateMove(15, dir === '↑');
                 }
-                else if (id === 'mov_start_steer_only') {
+                else if (id === 'mov_start_dual_speed') {
+                    const speedL = parseFloat(inputs.speedL !== undefined ? inputs.speedL : 50);
+                    const speedR = parseFloat(inputs.speedR !== undefined ? inputs.speedR : 50);
+
+                    if (speedL === speedR) {
+                        await this.animateMove(15, speedL >= 0);
+                    } else if (speedL === -speedR) {
+                        const isRight = speedL > speedR;
+                        await this.animateRotate(90, isRight);
+                    } else {
+                        const isRight = speedL > speedR;
+                        const deg = Math.abs(speedL - speedR) >= 40 ? 90 : 45;
+                        await this.animateRotate(deg, isRight);
+                    }
+                }
+                else if (id === 'mov_move_steer_dist' || id === 'mov_start_steer_only') {
                     const steer = inputs.steer || 'sağ: 30';
                     const isRight = steer.includes('sağ');
                     let deg = steer.includes('30') ? 30 : (steer.includes('50') ? 50 : 90);
@@ -745,9 +749,16 @@
                 }
             }
             else if (id === 'ctrl_if') {
-                const reqColor = (inputs.color || 'kırmızı').toLowerCase();
-                const curColor = this.robot.detectedColor.toLowerCase();
-                if (curColor === reqColor) {
+                const condType = (inputs.cond_type || '').toLowerCase();
+                const reqColor = (inputs.color || '').toLowerCase();
+                const curColor = (this.robot.detectedColor || '').toLowerCase();
+                let isMatch = false;
+                
+                if (condType.includes('renk') && curColor === reqColor) isMatch = true;
+                else if (condType.includes('mesafe')) isMatch = false; // Mocked
+                else if (condType.includes('sapma')) isMatch = false; // Mocked
+
+                if (isMatch) {
                     if (b.nestedThen) {
                         for (const child of b.nestedThen) {
                             await this.executeSingleBlock(child);
@@ -756,9 +767,16 @@
                 }
             }
             else if (id === 'ctrl_if_else') {
-                const reqColor = (inputs.color || 'kırmızı').toLowerCase();
-                const curColor = this.robot.detectedColor.toLowerCase();
-                if (curColor === reqColor) {
+                const condType = (inputs.cond_type || '').toLowerCase();
+                const reqColor = (inputs.color || '').toLowerCase();
+                const curColor = (this.robot.detectedColor || '').toLowerCase();
+                let isMatch = false;
+                
+                if (condType.includes('renk') && curColor === reqColor) isMatch = true;
+                else if (condType.includes('mesafe')) isMatch = false; // Mocked
+                else if (condType.includes('sapma')) isMatch = false; // Mocked
+
+                if (isMatch) {
                     if (b.nestedThen) {
                         for (const child of b.nestedThen) {
                             await this.executeSingleBlock(child);
@@ -769,6 +787,32 @@
                         for (const child of b.nestedElse) {
                             await this.executeSingleBlock(child);
                         }
+                    }
+                }
+            }
+            else if (id === 'ctrl_wait_until' || id === 'ctrl_repeat_until') {
+                const condType = (inputs.cond_type || '').toLowerCase();
+                const reqColor = (inputs.color || '').toLowerCase();
+                
+                let loops = 0;
+                while (!this.state.isCancelled && loops < 40) {
+                    loops++;
+                    const curColor = (this.robot.detectedColor || '').toLowerCase();
+                    let isMatch = false;
+                    
+                    if (condType.includes('renk') && curColor === reqColor) isMatch = true;
+                    else if (condType.includes('mesafe')) isMatch = false;
+                    else if (condType.includes('sapma')) isMatch = false;
+
+                    if (isMatch) break;
+
+                    if (b.nestedThen && b.nestedThen.length > 0) {
+                        for (const child of b.nestedThen) {
+                            if (this.state.isCancelled) break;
+                            await this.executeSingleBlock(child);
+                        }
+                    } else {
+                        await new Promise(r => setTimeout(r, 200));
                     }
                 }
             }

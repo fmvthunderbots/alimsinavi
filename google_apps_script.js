@@ -83,11 +83,11 @@ function doPost(e) {
     sheet.appendRow(["📝 5. Soru Puanı (Max 10):", q5Score]);
     var q5ScoreRow = sheet.getLastRow();
     
-    // --- 6. SORU (MANTIK 4 - Akıllı Depo Yük Taşıma) ---
+    // --- 6. SORU (MANTIK 4 - Akıllı Şifre Çözme) ---
     var q6Ans = data.q6Answer || "(Yanıt verilmedi)";
     var q6Clean = q6Ans.replace(/\s+/g, "");
-    var q6Score = (q6Clean.indexOf("7-4-2-1") !== -1 || q6Clean.indexOf("7,4,2,1") !== -1 || q6Clean.indexOf("6-5-3") !== -1 || q6Clean.indexOf("6,5,3") !== -1) ? 10 : 0;
-    sheet.appendRow(["🧠 6. SORU MANTIK YANITI (Yük Taşıma):", q6Ans]);
+    var q6Score = (q6Clean.indexOf("23514") !== -1) ? 10 : 0;
+    sheet.appendRow(["🧠 6. SORU MANTIK YANITI (Şifre Çözme):", q6Ans]);
     sheet.appendRow(["📝 6. Soru Puanı (Max 10):", q6Score]);
     var q6ScoreRow = sheet.getLastRow();
     

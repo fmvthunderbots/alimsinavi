@@ -815,11 +815,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const options = optionsList.map(opt => `<option value="${opt}" ${opt === currentVal ? 'selected' : ''}>${opt}</option>`).join('');
                 const extraClass = input.isHex ? 'hex-pill' : '';
                 const msgAttr = input.isMsgSelect ? 'data-is-msg="true"' : '';
-                inputHtml = `<select class="block-input-pill ${extraClass}" data-input-id="${valKey}" ${msgAttr}>${options}</select>`;
+                const hiddenStyle = input.hidden ? 'style="display: none;"' : '';
+                inputHtml = `<select class="block-input-pill ${extraClass}" data-input-id="${valKey}" ${msgAttr} ${hiddenStyle}>${options}</select>`;
             } else if (input.type === 'number') {
-                inputHtml = `<input type="number" class="block-input-pill" data-input-id="${valKey}" value="${currentVal}" placeholder="">`;
+                const hiddenStyle = input.hidden ? 'style="display: none;"' : '';
+                inputHtml = `<input type="number" class="block-input-pill" data-input-id="${valKey}" value="${currentVal}" placeholder="" ${hiddenStyle}>`;
             } else if (input.type === 'text') {
-                inputHtml = `<input type="text" class="block-input-pill" data-input-id="${valKey}" value="${currentVal}" placeholder="">`;
+                const hiddenStyle = input.hidden ? 'style="display: none;"' : '';
+                inputHtml = `<input type="text" class="block-input-pill" data-input-id="${valKey}" value="${currentVal}" placeholder="" ${hiddenStyle}>`;
             }
 
             renderedText = renderedText.replace(`{${valKey}}`, inputHtml);
@@ -838,12 +841,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const isIfElse = bDef.id === 'ctrl_if_else';
-            const isLoop = bDef.id === 'ctrl_repeat' || bDef.id === 'ctrl_forever' || bDef.id === 'ctrl_repeat_until';
+            const isLoop = bDef.id === 'ctrl_repeat' || bDef.id === 'ctrl_forever' || bDef.id === 'ctrl_repeat_until' || bDef.id === 'ctrl_wait_until';
 
             if (isIfElse) {
                 cWrapper.innerHTML = `
                     <div class="c-block-header" style="background-color: ${catObj.color};">
-                        <span>eğer</span> ${renderedText.replace('eğer', '').replace('ise değilse', '')} <span>ise</span>
+                        <div style="display:flex; align-items:center; gap:6px;"><span>eğer</span> ${renderedText.replace('eğer', '').replace('ise değilse', '')} <span>ise</span></div>
                     </div>
                     <div class="c-block-inner-zone nested-drop-zone" data-slot="then"></div>
                     <div class="c-block-middle" style="background-color: ${catObj.color};">
@@ -855,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 cWrapper.innerHTML = `
                     <div class="c-block-header" style="background-color: ${catObj.color};">
-                        <span>${renderedText}</span>
+                        <div style="display:flex; align-items:center; gap:6px;"><span>${renderedText}</span></div>
                     </div>
                     <div class="c-block-inner-zone nested-drop-zone" data-slot="then"></div>
                     <div class="c-block-footer" style="background-color: ${catObj.color};">
@@ -864,7 +867,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }
 
-            cWrapper.querySelectorAll('.nested-drop-zone').forEach(zone => {
+            cWrapper.querySelectorAll('.nested-drop-zone, .boolean-drop-zone').forEach(zone => {
                 zone.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -952,6 +955,38 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
 
+        blockEl.querySelectorAll('.boolean-drop-zone').forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                zone.classList.add('zone-drag-over');
+            });
+            zone.addEventListener('dragleave', (e) => {
+                e.stopPropagation();
+                zone.classList.remove('zone-drag-over');
+            });
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                zone.classList.remove('zone-drag-over');
+                if (!currentDraggedBlock) return;
+                
+                let newEl = null;
+                if (currentDraggedBlock.isTemplate) {
+                    newEl = createBlockElement(currentDraggedBlock.bDef, false);
+                } else {
+                    newEl = currentDraggedBlock.element;
+                }
+
+                if (newEl) {
+                    zone.innerHTML = '';
+                    zone.appendChild(newEl);
+                }
+                updatePlaceholderVisibility();
+                saveCurrentQuestionState();
+            });
+        });
+
         setupBlockInputEvents(blockEl, isTemplate);
 
         blockEl.addEventListener('dragstart', (e) => {
@@ -991,9 +1026,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+                if (inp.dataset.inputId === 'cond_type') {
+                    const val = inp.value;
+                    const port = el.querySelector('[data-input-id="port"]');
+                    const color = el.querySelector('[data-input-id="color"]');
+                    const op = el.querySelector('[data-input-id="op"]');
+                    const num = el.querySelector('[data-input-id="val"]');
+                    
+                    if (port) port.style.display = 'none';
+                    if (color) color.style.display = 'none';
+                    if (op) op.style.display = 'none';
+                    if (num) num.style.display = 'none';
+
+                    if (val === 'Renk') {
+                        if (port) port.style.display = 'inline-flex';
+                        if (color) color.style.display = 'inline-flex';
+                    } else if (val === 'Mesafe') {
+                        if (port) port.style.display = 'inline-flex';
+                        if (op) op.style.display = 'inline-flex';
+                        if (num) num.style.display = 'inline-flex';
+                    } else if (val === 'Sapma Açısı') {
+                        if (op) op.style.display = 'inline-flex';
+                        if (num) num.style.display = 'inline-flex';
+                    }
+                }
+
                 if (!isTemplate) saveCurrentQuestionState();
             });
         });
+
+        const condTypeInp = el.querySelector('[data-input-id="cond_type"]');
+        if (condTypeInp) {
+            condTypeInp.dispatchEvent(new Event('change'));
+        }
     }
 
     function updateAllMessageDropdowns(selectedMsg) {
@@ -1716,12 +1781,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Kağıt üzerinde çözülecek sorular (3 ve 4) için klavye ve buton desteği
-    if (btnPaperNextQuestion) {
-        btnPaperNextQuestion.addEventListener('click', () => {
-            btnNextQuestion.click();
-        });
-    }
+    // Kağıt üzerinde çözülecek sorular için klavye desteği
 
     if (inputPaperAnswer) {
         inputPaperAnswer.addEventListener('input', () => {

@@ -166,23 +166,13 @@ const INITIAL_BLOCKS = [
         ]
     },
     {
-        id: 'mov_move_steer_dist',
+        id: 'mov_start_dual_speed',
         category: 'hareket',
         type: 'statement',
-        text: '[ {steer} ▼ ] , [ {val} ] [ {unit} ▼ ] hareket ettir',
+        text: '% [ {speedL} ] [ {speedR} ] hız ile harekete başlat',
         inputs: [
-            { id: 'steer', type: 'select', options: ['düz: 0', 'sağ: 30', 'sol: 30', 'sağ: 50', 'sol: 50', 'sağ: 90', 'sol: 90', 'sağ: 100', 'sol: 100'], default: 'sağ: 30' },
-            { id: 'val', type: 'number', default: 10 },
-            { id: 'unit', type: 'select', options: ['tur', 'derece', 'saniye', 'cm', 'inç'], default: 'tur' }
-        ]
-    },
-    {
-        id: 'mov_start_steer_only',
-        category: 'hareket',
-        type: 'statement',
-        text: '[ {steer} ▼ ] harekete başlat',
-        inputs: [
-            { id: 'steer', type: 'select', options: ['düz: 0', 'sağ: 30', 'sol: 30', 'sağ: 50', 'sol: 50', 'sağ: 90', 'sol: 90', 'sağ: 100', 'sol: 100'], default: 'sağ: 30' }
+            { id: 'speedL', type: 'number', default: 50 },
+            { id: 'speedR', type: 'number', default: 50 }
         ]
     },
     {
@@ -309,11 +299,8 @@ const INITIAL_BLOCKS = [
         id: 'evt_when_cond',
         category: 'olaylar',
         type: 'hat',
-        text: 'şu durumda: < [ {port} ] [ {color} ▼ ] renkte mi? >',
-        inputs: [
-            { id: 'port', type: 'select', options: ['A', 'B', 'C', 'D', 'E', 'F'], default: 'A' },
-            { id: 'color', type: 'select', options: ['kırmızı', 'siyah', 'yeşil', 'mavi', 'sarı', 'beyaz', 'renk yok'], default: 'kırmızı' }
-        ]
+        text: 'şu durumda: <div class="hex-empty-slot boolean-drop-zone"></div>',
+        inputs: []
     },
     {
         id: 'evt_receive_msg',
@@ -357,7 +344,7 @@ const INITIAL_BLOCKS = [
         id: 'ctrl_repeat',
         category: 'kontrol',
         type: 'c_block',
-        text: '[ {count} ] defa tekrarla',
+        text: '[ {count} ] kez tekrarla',
         inputs: [
             { id: 'count', type: 'number', default: 10 }
         ]
@@ -366,48 +353,36 @@ const INITIAL_BLOCKS = [
         id: 'ctrl_forever',
         category: 'kontrol',
         type: 'c_block',
-        text: 'sürekli tekrarla',
+        text: 'Sonsuza kadar tekrarla',
         inputs: []
     },
     {
         id: 'ctrl_if',
         category: 'kontrol',
         type: 'c_block',
-        text: 'eğer < [ {port} ] [ {color} ▼ ] renkte mi? > ise',
-        inputs: [
-            { id: 'port', type: 'select', options: ['A', 'B', 'C', 'D', 'E', 'F'], default: 'A' },
-            { id: 'color', type: 'select', options: ['kırmızı', 'siyah', 'yeşil', 'mavi', 'sarı', 'beyaz', 'renk yok'], default: 'kırmızı' }
-        ]
+        text: 'eğer <div class="hex-empty-slot boolean-drop-zone"></div> ise',
+        inputs: []
     },
     {
         id: 'ctrl_if_else',
         category: 'kontrol',
         type: 'c_block',
-        text: 'eğer < [ {port} ] [ {color} ▼ ] renkte mi? > ise değilse',
-        inputs: [
-            { id: 'port', type: 'select', options: ['A', 'B', 'C', 'D', 'E', 'F'], default: 'A' },
-            { id: 'color', type: 'select', options: ['kırmızı', 'siyah', 'yeşil', 'mavi', 'sarı', 'beyaz', 'renk yok'], default: 'kırmızı' }
-        ]
+        text: 'eğer <div class="hex-empty-slot boolean-drop-zone"></div> ise değilse',
+        inputs: []
     },
     {
         id: 'ctrl_wait_until',
         category: 'kontrol',
-        type: 'statement',
-        text: '< [ {port} ] [ {color} ▼ ] renkte mi? > olana kadar bekle',
-        inputs: [
-            { id: 'port', type: 'select', options: ['A', 'B', 'C', 'D', 'E', 'F'], default: 'A' },
-            { id: 'color', type: 'select', options: ['kırmızı', 'siyah', 'yeşil', 'mavi', 'sarı', 'beyaz', 'renk yok'], default: 'kırmızı' }
-        ]
+        type: 'c_block',
+        text: '<div class="hex-empty-slot boolean-drop-zone"></div> olana kadar bekle',
+        inputs: []
     },
     {
         id: 'ctrl_repeat_until',
         category: 'kontrol',
         type: 'c_block',
-        text: '< [ {port} ] [ {color} ▼ ] renkte mi? > olana kadar tekrarla',
-        inputs: [
-            { id: 'port', type: 'select', options: ['A', 'B', 'C', 'D', 'E', 'F'], default: 'A' },
-            { id: 'color', type: 'select', options: ['kırmızı', 'siyah', 'yeşil', 'mavi', 'sarı', 'beyaz', 'renk yok'], default: 'kırmızı' }
-        ]
+        text: '<div class="hex-empty-slot boolean-drop-zone"></div> olana kadar tekrarla',
+        inputs: []
     },
     {
         id: 'ctrl_stop_other_stacks',
@@ -434,7 +409,7 @@ const INITIAL_BLOCKS = [
         text: '< [ {port} ] [ {color} ▼ ] renkte mi? >',
         inputs: [
             { id: 'port', type: 'select', options: ['A', 'B', 'C', 'D', 'E', 'F'], default: 'A' },
-            { id: 'color', type: 'select', options: ['kırmızı', 'siyah', 'yeşil', 'mavi', 'sarı', 'beyaz', 'renk yok'], default: 'kırmızı' }
+            { id: 'color', type: 'select', isHex: true, options: ['renk seçiniz...', 'kırmızı', 'siyah', 'yeşil', 'mavi', 'sarı', 'beyaz', 'renk yok'], default: 'renk seçiniz...' }
         ]
     },
     {
@@ -541,7 +516,7 @@ const INITIAL_BLOCKS = [
         type: 'reporter',
         text: '( [ {axis} ▼ ] açısı )',
         inputs: [
-            { id: 'axis', type: 'select', options: ['yunuslama', 'yalpalama', 'sapma'], default: 'yunuslama' }
+            { id: 'axis', type: 'select', options: ['sapma'], default: 'sapma' }
         ]
     },
     {
@@ -728,19 +703,19 @@ const DEFAULT_QUESTIONS = [
         id: 'q4',
         type: 'paper_input',
         title: '4. Soru: Akıllı Sepet Dağıtım Algoritması (Durum Mantığı)',
-        description: 'Bir fabrika robotu konveyör banttan geçen renkli paketleri 3 farklı sepete (A, B ve C) şu kurallara göre dağıtmaktadır:\n• 1. Kural: Eğer paket KIRMIZI ise doğrudan A sepetine atılır.\n• 2. Kural: Eğer paket MAVİ ise; A sepetindeki paket sayısı B sepetinden FAZLA ise B sepetine, değilse C sepetine atılır.\n• 3. Kural: Eğer paket YEŞİL ise en az paketin olduğu sepete atılır. (Eşitlik durumunda öncelik sırası A > B > C şeklindedir).\n\nBanttan sırasıyla şu 8 paket geçmektedir:\n1.Kırmızı ➔ 2.Mavi ➔ 3.Yeşil ➔ 4.Mavi ➔ 5.Kırmızı ➔ 6.Yeşil ➔ 7.Mavi ➔ 8.Yeşil\n\nSORU:\na) Tüm paketler dağıtıldıktan sonra A, B ve C sepetlerinde sırasıyla kaçar paket birikir? (Örn: A:3, B:2, C:3)\nb) 8. paket (son Yeşil paket) hangi sepete atılmıştır?'
+        description: 'Bir fabrika robotu konveyör banttan geçen renkli paketleri 3 farklı sepete (A, B ve C) şu kurallara göre dağıtmaktadır:\n• 1. Kural: Eğer paket KIRMIZI ise doğrudan A sepetine atılır.\n• 2. Kural: Eğer paket MAVİ ise; A sepetindeki paket sayısı B sepetinden FAZLA ise B sepetine, değilse C sepetine atılır.\n• 3. Kural: Eğer paket YEŞİL ise en az paketin olduğu sepete atılır. (Eşitlik durumunda öncelik sırası A > B > C şeklindedir).\n\nBanttan sırasıyla şu 8 paket geçmektedir:\n1.Kırmızı ➔ 2.Mavi ➔ 3.Yeşil ➔ 4.Mavi ➔ 5.Kırmızı ➔ 6.Yeşil ➔ 7.Mavi ➔ 8.Yeşil\n\nSORU: Tüm paketler dağıtıldıktan sonra A, B ve C sepetlerinde sırasıyla kaçar paket birikir? (Yazım Formatı Örneği: A:5, B:1, C:2)'
     },
     {
         id: 'q5',
         type: 'paper_input',
         title: '5. Soru: Dişli Çarklar ve Tur Sayısı Algoritması',
-        description: 'Bir robotik mekanizmada yan yana birbirine bağlı A, B ve C dişli çarkları bulunmaktadır:\n• A çarkının 24 dişi,\n• B çarkının 16 dişi,\n• C çarkının 36 dişi vardır.\n\nA çarkı saat yönünde dönmeye başladığında birbirine temas eden tüm dişliler dönmektedir.\n\nSORU: A çarkı saat yönünde 15 tam tur döndüğünde;\n1) C çarkı kaç tam tur dönmüş olur?\n2) C çarkı saat yönünde mi yoksa saat yönünün tersine mi döner?\n\n(Cevabınızı "10 tur, saat yönünde" veya benzeri şekilde yazınız.)'
+        description: 'Bir robotik mekanizmada yan yana birbirine bağlı A, B ve C dişli çarkları bulunmaktadır:\n• A çarkının 24 dişi,\n• B çarkının 16 dişi,\n• C çarkının 36 dişi vardır.\n\nA çarkı saat yönünde dönmeye başladığında birbirine temas eden tüm dişliler dönmektedir.\n\nSORU: A çarkı saat yönünde 15 tam tur döndüğünde C çarkı kaç tam tur dönmüş olur?'
     },
     {
         id: 'q6',
         type: 'paper_input',
-        title: '6. Soru: Akıllı Depo Yük Taşıma Algoritması',
-        description: 'Bir depoda ağırlıkları 1 kg, 2 kg, 3 kg, 4 kg, 5 kg, 6 kg ve 7 kg olan 7 paket bulunmaktadır. Taşıyıcı robot bu paketleri en fazla 2 seferde üst kata taşımalıdır.\n\nRobotun taşıma kısıtlamaları:\n1. Robot her seferde en fazla 4 paket taşıyabilir.\n2. Robot her seferde en fazla 15 kg kaldırabilir.\n3. Her iki seferde taşınan toplam ağırlıklar birbirine eşit (14 kg - 14 kg) olmalıdır.\n4. 7 kg ve 1 kg\'lık paketler aynı seferde taşınmalıdır.\n5. 1. Seferde TAM 4 adet paket taşınmalıdır.\n\nSORU:\na) 1. Seferde taşınan 4 paketin ağırlıkları nelerdir? (Örn: 7-4-2-1)\nb) 2. Seferde taşınan 3 paketin ağırlıkları nelerdir? (Örn: 6-5-3)'
+        title: '6. Soru: Akıllı Şifre Çözme Algoritması',
+        description: 'Bir güvenlik robotu kapıyı açmak için 1, 2, 3, 4 ve 5 rakamlarından oluşan 5 basamaklı bir şifreyi çözmelidir.\n\nRobotun sisteminde tanımlı olan kısıtlamalar şöyledir:\n\n• 1, 2, 3, 4 ve 5 rakamlarının her biri bir kez kullanılmaktadır.\n• Oluşan 5 basamaklı şifre çift bir sayıdır.\n• İlk iki basamağın toplamı, son iki basamağın toplamına eşittir.\n• 3 ve 5 rakamları yan yanadır ve 3 rakamı 5\'in hemen solundadır.\n\nSORU: Bu şartları sağlayan 5 basamaklı şifre kaçtır?'
     },
     {
         id: 'q7',
