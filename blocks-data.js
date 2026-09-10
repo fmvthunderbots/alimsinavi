@@ -38,6 +38,18 @@ const INITIAL_BLOCKS = [
         ]
     },
     {
+        id: 'mot_move_steer',
+        category: 'hareket',
+        type: 'statement',
+        text: '[ {dir} ▼ ] [ {angle} ] , [ {val} ] [ {unit} ▼ ] hareket ettir',
+        inputs: [
+            { id: 'dir', type: 'select', options: ['sağ', 'sol', 'düz'], default: 'sağ' },
+            { id: 'angle', type: 'number', default: 30 },
+            { id: 'val', type: 'number', default: 10 },
+            { id: 'unit', type: 'select', options: ['tur', 'derece', 'saniye'], default: 'tur' }
+        ]
+    },
+    {
         id: 'mot_stop',
         category: 'motorlar',
         type: 'statement',
@@ -606,9 +618,9 @@ const INITIAL_BLOCKS = [
         id: 'op_lt',
         category: 'operatorler',
         type: 'boolean',
-        text: '< [ {val1} ] < [ {val2} ] >',
+        text: '< [ {val1} ▼ ] < [ {val2} ] >',
         inputs: [
-            { id: 'val1', type: 'number', default: '' },
+            { id: 'val1', type: 'select', options: ['...', 'sapma açısı', 'yansıyan ışık', 'mesafe (cm)', 'mesafe (%)', 'kronometre', 'değişken', 'değer'], default: '...' },
             { id: 'val2', type: 'number', default: 100 }
         ]
     },
@@ -616,9 +628,9 @@ const INITIAL_BLOCKS = [
         id: 'op_eq',
         category: 'operatorler',
         type: 'boolean',
-        text: '< [ {val1} ] = [ {val2} ] >',
+        text: '< [ {val1} ▼ ] = [ {val2} ] >',
         inputs: [
-            { id: 'val1', type: 'number', default: '' },
+            { id: 'val1', type: 'select', options: ['...', 'sapma açısı', 'yansıyan ışık', 'mesafe (cm)', 'mesafe (%)', 'kronometre', 'değişken', 'değer'], default: '...' },
             { id: 'val2', type: 'number', default: 100 }
         ]
     },
@@ -626,9 +638,9 @@ const INITIAL_BLOCKS = [
         id: 'op_gt',
         category: 'operatorler',
         type: 'boolean',
-        text: '< [ {val1} ] > [ {val2} ] >',
+        text: '< [ {val1} ▼ ] > [ {val2} ] >',
         inputs: [
-            { id: 'val1', type: 'number', default: '' },
+            { id: 'val1', type: 'select', options: ['...', 'sapma açısı', 'yansıyan ışık', 'mesafe (cm)', 'mesafe (%)', 'kronometre', 'değişken', 'değer'], default: '...' },
             { id: 'val2', type: 'number', default: 100 }
         ]
     },
@@ -684,14 +696,14 @@ const DEFAULT_QUESTIONS = [
     {
         id: 'q1',
         type: 'blocks',
-        title: '1. Soru: Robotun Hareket Rotası',
-        description: 'Aşağıda verilen komutların kodlamasını yapınız:\n• Robot 10 santimetre ileriye gitsin.\n• 90 derece sağa dönsün.\n• 20 santimetre geriye gitsin.\n• Kodlamayı bitir.'
+        title: '1. Soru: Eşkenar Üçgen Rotası (Algoritma & Geometri)',
+        description: 'Robotunuzun sahada bir eşkenar üçgen çizerek başlangıç noktasına geri dönmesi istenmektedir.\n\nKurallar:\n• Üçgenin her bir kenar uzunluğu tam olarak 40 cm olmalıdır.\n• Robotun gereksiz kod tekrarı yapmaması için döngü (Tekrarla) bloklarını kullanmanız beklenmektedir.\n• (İpucu: Bir eşkenar üçgenin iç açısı 60 derecedir, ancak robotun dönüş yapması gereken dış açı farklıdır!)\n\nGereken kod bloklarını oluşturunuz.'
     },
     {
         id: 'q2',
         type: 'blocks',
-        title: '2. Soru: Renk Sensörü ve Motor Kontrolü',
-        description: 'Aşağıda verilen komutların kodlamasını yapınız:\n• Robot 30 cm ileri gitsin.\n• 90 derece sola dönsün.\n• 20 cm ileri gitsin.\n• Cisim okumak için renk sensörü ile okuma yapsın.\n• Eğer renk kırmızı ise C motorunu 1 tur çalıştırsın.\n• Eğer renk siyah ise D motorunu 1 tur çalıştırsın.\n• Kodlamayı bitir.'
+        title: '2. Soru: Akıllı Otopark Asistanı (Sensör & Şartlar)',
+        description: 'Robotunuz düz bir yolda yavaşça ilerlerken mesafe sensörü ile sağ tarafındaki park boşluklarını taramaktadır.\n\nKurallar:\n• Robot, okunan mesafe 15 cm\'den BÜYÜK olana kadar ilerlemeye devam etmelidir.\n• Mesafe 15 cm\'den büyük olduğunda (boşluk bulduğunda):\n  1. Hareketi durdurmalı,\n  2. 90 derece sağa dönmeli,\n  3. 15 cm geriye giderek park etmeli,\n  4. Sensördeki (veya motordaki) herhangi bir değeri sıfırlayarak işlemi bitirmelidir.\n\nGereken algoritmayı yazınız.'
     },
     {
         id: 'q3',

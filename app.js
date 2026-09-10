@@ -3,14 +3,14 @@
  * Multi-Stack Canvas Support: Event Hat Blocks and Custom Blocks spawn as independent parallel stacks!
  */
 
-// ⚠️ E-TABLO BAĞLANTI AYARLARI VE ÖĞRETMEN YÖNETİMİ
-const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyb6raQ5BaQ79awz9UmxpCtxDI9Lc0vBa3pDa3p8l1Y2zmkjNJxtAel1vmRF1biCAws/exec';
+// 🚀 E-TABLO BAĞLANTI AYARLARI VE ÖĞRETMEN YÖNETİMİ
+const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzmphPtbOyvx5OYNa2uANe7ztMwMzio_LpgFR43VU63VnaWZQkOZxe9obiSPVI0T1cO/exec';
 const TEACHER_MASTER_PASSWORD = '26575982824.bati';
 const STORAGE_TEACHER_LOGGED = 'spike_teacher_authenticated';
 
 function getGoogleSheetWebhookUrl() {
     const customUrl = localStorage.getItem('spike_webhook_url');
-    if (customUrl && customUrl.includes('AKfycbyb6raQ5BaQ79awz9UmxpCtxDI9Lc0vBa3pDa3p8l1Y2zmkjNJxtAel1vmRF1biCAws')) {
+    if (customUrl && customUrl.includes('script.google.com/macros')) {
         return customUrl;
     }
     return DEFAULT_GOOGLE_SHEET_WEBHOOK_URL;
@@ -819,10 +819,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 inputHtml = `<select class="block-input-pill ${extraClass}" data-input-id="${valKey}" ${msgAttr} ${hiddenStyle}>${options}</select>`;
             } else if (input.type === 'number') {
                 const hiddenStyle = input.hidden ? 'style="display: none;"' : '';
-                inputHtml = `<input type="number" class="block-input-pill" data-input-id="${valKey}" value="${currentVal}" placeholder="" ${hiddenStyle}>`;
+                inputHtml = `<div class="inline-drop-zone reporter-drop-zone" data-input-wrapper-id="${valKey}" style="display:inline-block; position:relative;"><input type="number" class="block-input-pill" data-input-id="${valKey}" value="${currentVal}" placeholder="" ${hiddenStyle}></div>`;
             } else if (input.type === 'text') {
                 const hiddenStyle = input.hidden ? 'style="display: none;"' : '';
-                inputHtml = `<input type="text" class="block-input-pill" data-input-id="${valKey}" value="${currentVal}" placeholder="" ${hiddenStyle}>`;
+                inputHtml = `<div class="inline-drop-zone reporter-drop-zone" data-input-wrapper-id="${valKey}" style="display:inline-block; position:relative;"><input type="text" class="block-input-pill" data-input-id="${valKey}" value="${currentVal}" placeholder="" ${hiddenStyle}></div>`;
             }
 
             renderedText = renderedText.replace(`{${valKey}}`, inputHtml);
@@ -867,7 +867,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }
 
-            cWrapper.querySelectorAll('.nested-drop-zone, .boolean-drop-zone').forEach(zone => {
+            cWrapper.querySelectorAll('.nested-drop-zone, .boolean-drop-zone, .reporter-drop-zone').forEach(zone => {
                 zone.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -886,9 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (!currentDraggedBlock) return;
 
-                    const afterElement = getDragAfterElement(zone, e.clientY);
                     let newEl = null;
-
                     if (currentDraggedBlock.isTemplate) {
                         newEl = createBlockElement(currentDraggedBlock.bDef, false);
                     } else {
@@ -896,10 +894,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     if (newEl) {
-                        if (afterElement) {
-                            zone.insertBefore(newEl, afterElement);
-                        } else {
-                            zone.appendChild(newEl);
+                        if (zone.classList.contains('nested-drop-zone')) {
+                            // statements go here
+                            const afterElement = getDragAfterElement(zone, e.clientY);
+                            if (afterElement) {
+                                zone.insertBefore(newEl, afterElement);
+                            } else {
+                                zone.appendChild(newEl);
+                            }
+                        } else if (zone.classList.contains('reporter-drop-zone') || zone.classList.contains('boolean-drop-zone')) {
+                            // Only allow reporter/boolean blocks
+                            const draggedType = currentDraggedBlock.bDef.type;
+                            if (draggedType === 'statement' || draggedType === 'hat' || draggedType === 'c_block') {
+                                return; // Reject drop
+                            }
+
+                            if (zone.classList.contains('reporter-drop-zone')) {
+                                zone.querySelectorAll(':scope > .instance-block').forEach(el => el.remove());
+                                zone.appendChild(newEl);
+                            } else {
+                                zone.innerHTML = '';
+                                zone.appendChild(newEl);
+                            }
                         }
                     }
 
@@ -912,6 +928,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             cWrapper.addEventListener('dragstart', (e) => {
                 e.stopPropagation();
+                document.body.classList.add('is-dragging-block');
                 currentDraggedBlock = { element: cWrapper, isTemplate: isTemplate, bDef: bDef };
                 e.dataTransfer.setData('text/plain', bDef.id);
                 cWrapper.style.opacity = '0.5';
@@ -919,6 +936,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             cWrapper.addEventListener('dragend', (e) => {
                 e.stopPropagation();
+                document.body.classList.remove('is-dragging-block');
                 cWrapper.style.opacity = '1';
                 currentDraggedBlock = null;
             });
@@ -955,7 +973,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
 
-        blockEl.querySelectorAll('.boolean-drop-zone').forEach(zone => {
+        blockEl.querySelectorAll('.boolean-drop-zone, .reporter-drop-zone').forEach(zone => {
             zone.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -979,8 +997,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (newEl) {
-                    zone.innerHTML = '';
-                    zone.appendChild(newEl);
+                    if (zone.classList.contains('reporter-drop-zone') || zone.classList.contains('boolean-drop-zone')) {
+                        const draggedType = currentDraggedBlock.bDef.type;
+                        if (draggedType === 'statement' || draggedType === 'hat' || draggedType === 'c_block') {
+                            return; // Reject drop
+                        }
+
+                        if (zone.classList.contains('reporter-drop-zone')) {
+                            zone.querySelectorAll(':scope > .instance-block').forEach(el => el.remove());
+                            zone.appendChild(newEl);
+                        } else {
+                            zone.innerHTML = '';
+                            zone.appendChild(newEl);
+                        }
+                    }
                 }
                 updatePlaceholderVisibility();
                 saveCurrentQuestionState();
@@ -991,6 +1021,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         blockEl.addEventListener('dragstart', (e) => {
             e.stopPropagation();
+            document.body.classList.add('is-dragging-block');
             currentDraggedBlock = {
                 element: blockEl,
                 isTemplate: isTemplate,
@@ -1002,6 +1033,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         blockEl.addEventListener('dragend', (e) => {
             e.stopPropagation();
+            document.body.classList.remove('is-dragging-block');
             blockEl.style.opacity = '1';
             currentDraggedBlock = null;
         });
@@ -1416,10 +1448,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const blockId = el.dataset.blockId;
         const inputVals = {};
 
-        el.querySelectorAll('.block-input-pill').forEach(inp => {
+        // Handle selects and un-wrapped inputs
+        el.querySelectorAll('.block-input-pill:not(div)').forEach(inp => {
             const inputId = inp.dataset.inputId;
-            inputVals[inputId] = inp.value;
+            if (inputId) inputVals[inputId] = inp.value;
         });
+
+        // Handle reporter drop zones
+        el.querySelectorAll('.reporter-drop-zone').forEach(zone => {
+            const wrapperId = zone.dataset.inputWrapperId;
+            const childEl = zone.querySelector(':scope > .instance-block');
+            const inp = zone.querySelector('input');
+            if (wrapperId) {
+                if (childEl) {
+                    inputVals[wrapperId] = { isBlock: true, data: serializeBlockElement(childEl) };
+                } else if (inp) {
+                    inputVals[wrapperId] = inp.value;
+                }
+            }
+        });
+
+        const nestedBoolean = null;
+        const booleanZone = el.querySelector('.boolean-drop-zone');
+        if (booleanZone) {
+            const childEl = booleanZone.querySelector(':scope > .instance-block');
+            if (childEl) {
+                inputVals['_booleanSlot'] = { isBlock: true, data: serializeBlockElement(childEl) };
+            }
+        }
 
         const nestedThen = [];
         const thenZone = el.querySelector('.nested-drop-zone[data-slot="then"]');
@@ -1507,13 +1563,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!bDef) return null;
 
         const customDef = JSON.parse(JSON.stringify(bDef));
-        customDef.inputs.forEach(inp => {
-            if (savedB.inputs[inp.id] !== undefined) {
-                inp.value = savedB.inputs[inp.id];
+        Object.keys(savedB.inputs || {}).forEach(key => {
+            const val = savedB.inputs[key];
+            if (val && val.isBlock) {
+                // do nothing for inputs here, we'll append the block element next
+            } else if (key !== '_booleanSlot') {
+                const inp = customDef.inputs.find(i => i.id === key);
+                if (inp) inp.value = val;
             }
         });
 
         const blockEl = createBlockElement(customDef, false);
+
+        // Render inline reporter drops
+        Object.keys(savedB.inputs || {}).forEach(key => {
+            const val = savedB.inputs[key];
+            if (val && val.isBlock) {
+                const childEl = renderSavedBlockData(val.data);
+                if (childEl) {
+                    if (key === '_booleanSlot') {
+                        const bZone = blockEl.querySelector('.boolean-drop-zone');
+                        if (bZone) { bZone.innerHTML = ''; bZone.appendChild(childEl); }
+                    } else {
+                        const rZone = blockEl.querySelector(`.reporter-drop-zone[data-input-wrapper-id="${key}"]`);
+                        if (rZone) {
+                            rZone.appendChild(childEl);
+                        }
+                    }
+                }
+            }
+        });
 
         if (savedB.nestedThen && savedB.nestedThen.length > 0) {
             const thenZone = blockEl.querySelector('.nested-drop-zone[data-slot="then"]');
@@ -1848,8 +1927,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const catBadge = CATEGORY_BADGES[bDef?.category] || '🔹';
 
             let text = bDef ? bDef.text : bData.id;
+            
+            // Format inline booleans
+            if (bData.inputs && bData.inputs['_booleanSlot'] && bData.inputs['_booleanSlot'].isBlock) {
+                const nestedBText = formatBlockGroup([bData.inputs['_booleanSlot'].data], 0).trim().replace(/^🔹 /, '').replace(/^🟢 /, '').replace(/^🟡 /, '');
+                text = text.replace('<div class="hex-empty-slot boolean-drop-zone"></div>', `< ${nestedBText} >`);
+            } else {
+                text = text.replace('<div class="hex-empty-slot boolean-drop-zone"></div>', '< >');
+            }
+
             Object.keys(bData.inputs || {}).forEach(key => {
-                text = text.replace(`{${key}}`, `[${bData.inputs[key]}]`);
+                if (key === '_booleanSlot') return;
+                const val = bData.inputs[key];
+                if (val && val.isBlock) {
+                    const nestedRText = formatBlockGroup([val.data], 0).trim().replace(/^🔹 /, '').replace(/^🟢 /, '').replace(/^🟡 /, '');
+                    text = text.replace(`{${key}}`, `(${nestedRText})`);
+                } else {
+                    text = text.replace(`{${key}}`, `[${val}]`);
+                }
             });
 
             const isCBlock = bDef?.type === 'c_block';

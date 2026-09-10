@@ -2348,3 +2348,12 @@ input[type="text"].block-input-pill {
 
 .hex-empty-slot { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; height: 26px; background-color: rgba(0, 0, 0, 0.15); clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%); margin: 0 4px; box-sizing: border-box; }
 .hex-empty-slot.zone-drag-over { background-color: rgba(255, 255, 255, 0.4); border: 2px dashed #fff; }
+
+.reporter-drop-zone.zone-drag-over { background-color: rgba(255,255,255,0.4); border-radius: 12px; box-shadow: 0 0 0 2px #fff inset; }
+.reporter-drop-zone { border-radius: 12px; }
+
+body.is-dragging-block .reporter-drop-zone input { pointer-events: none; }
+body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
+
+.reporter-drop-zone:has(.instance-block) input { display: none !important; }
+.reporter-drop-zone:has(.instance-block) select { display: none !important; }

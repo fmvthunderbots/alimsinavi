@@ -30,7 +30,7 @@ function doPost(e) {
     if (hwPoints > 10) hwPoints = 10;
     
     // Ayraç Çizgisi
-    sheet.appendRow(["======================================================", "======================================================"]);
+    sheet.appendRow(["'======================================================", "'======================================================"]);
     sheet.getRange(sheet.getLastRow(), 1, 1, 2).setFontWeight("bold").setBackground("#cbd5e1");
     
     sheet.appendRow(["📅 Tarih / Saat:", timestamp]);
@@ -40,23 +40,23 @@ function doPost(e) {
     var hwScoreRow = sheet.getLastRow();
     
     // --- 1. SORU (KODLAMA 1) ---
-    sheet.appendRow(["📌 1. SORU ÖĞRENCİ KODU:", ""]);
-    sheet.getRange(sheet.getLastRow(), 1, 1, 2).setFontWeight("bold").setBackground("#e2e8f0");
+    sheet.appendRow(["📌 1. SORU ÖĞRENCİ KODU:", "", "BEKLENEN ÇÖZÜM: Öğrencinin serbest blok dizilimi manuel kontrol edilmelidir."]);
+    sheet.getRange(sheet.getLastRow(), 1, 1, 3).setFontWeight("bold").setBackground("#e2e8f0");
     var q1Lines = (data.q1Answer || "(Yanıt verilmedi)").split("\n");
     for (var i = 0; i < q1Lines.length; i++) {
-      if (q1Lines[i].trim() !== "") sheet.appendRow(["", q1Lines[i]]);
+      if (q1Lines[i].trim() !== "") sheet.appendRow(["", q1Lines[i], ""]);
     }
-    sheet.appendRow(["📝 1. Soru Puanı (Max 10):", (data.q1Answer && data.q1Answer !== "(Yanıt verilmedi)") ? 10 : 0]);
+    sheet.appendRow(["📝 1. Soru Puanı (Max 10):", (data.q1Answer && data.q1Answer !== "(Yanıt verilmedi)") ? 10 : 0, ""]);
     var q1ScoreRow = sheet.getLastRow();
     
     // --- 2. SORU (KODLAMA 2) ---
-    sheet.appendRow(["📌 2. SORU ÖĞRENCİ KODU:", ""]);
-    sheet.getRange(sheet.getLastRow(), 1, 1, 2).setFontWeight("bold").setBackground("#e2e8f0");
+    sheet.appendRow(["📌 2. SORU ÖĞRENCİ KODU:", "", "BEKLENEN ÇÖZÜM: Öğrencinin serbest blok dizilimi manuel kontrol edilmelidir."]);
+    sheet.getRange(sheet.getLastRow(), 1, 1, 3).setFontWeight("bold").setBackground("#e2e8f0");
     var q2Lines = (data.q2Answer || "(Yanıt verilmedi)").split("\n");
     for (var j = 0; j < q2Lines.length; j++) {
-      if (q2Lines[j].trim() !== "") sheet.appendRow(["", q2Lines[j]]);
+      if (q2Lines[j].trim() !== "") sheet.appendRow(["", q2Lines[j], ""]);
     }
-    sheet.appendRow(["📝 2. Soru Puanı (Max 10):", (data.q2Answer && data.q2Answer !== "(Yanıt verilmedi)") ? 10 : 0]);
+    sheet.appendRow(["📝 2. Soru Puanı (Max 10):", (data.q2Answer && data.q2Answer !== "(Yanıt verilmedi)") ? 10 : 0, ""]);
     var q2ScoreRow = sheet.getLastRow();
     
     // --- 3. SORU (MANTIK 1 - Robotik Şifre) ---
@@ -64,6 +64,8 @@ function doPost(e) {
     var q3Clean = q3Ans.replace(/\s+/g, "");
     var q3Score = (q3Clean.indexOf("9284") !== -1) ? 10 : 0;
     sheet.appendRow(["🧠 3. SORU MANTIK YANITI (Robotik Şifre):", q3Ans]);
+    sheet.appendRow(["✅ BEKLENEN YANIT:", "9284"]);
+    sheet.getRange(sheet.getLastRow(), 1, 1, 2).setFontColor("#15803d").setBackground("#f0fdf4");
     sheet.appendRow(["📝 3. Soru Puanı (Max 10):", q3Score]);
     var q3ScoreRow = sheet.getLastRow();
     
@@ -72,6 +74,8 @@ function doPost(e) {
     var q4Clean = q4Ans.toLowerCase().replace(/\s+/g, "");
     var q4Score = (q4Clean.indexOf("3-2-3") !== -1 || q4Clean.indexOf("3,2,3") !== -1 || (q4Clean.indexOf("a:3") !== -1 && q4Clean.indexOf("b:2") !== -1) || q4Clean.indexOf("asepeti") !== -1) ? 10 : 0;
     sheet.appendRow(["🧠 4. SORU MANTIK YANITI (Sepet Dağıtımı):", q4Ans]);
+    sheet.appendRow(["✅ BEKLENEN YANIT:", "3-2-3 (A:3, B:2, C:3)"]);
+    sheet.getRange(sheet.getLastRow(), 1, 1, 2).setFontColor("#15803d").setBackground("#f0fdf4");
     sheet.appendRow(["📝 4. Soru Puanı (Max 10):", q4Score]);
     var q4ScoreRow = sheet.getLastRow();
     
@@ -80,6 +84,8 @@ function doPost(e) {
     var q5Clean = q5Ans.toLowerCase();
     var q5Score = (q5Clean.indexOf("10") !== -1 && (q5Clean.indexOf("saat") !== -1 || q5Clean.indexOf("yön") !== -1 || q5Clean === "10")) ? 10 : (q5Clean.indexOf("10") !== -1 ? 5 : 0);
     sheet.appendRow(["🧠 5. SORU MANTIK YANITI (Dişli Çarklar):", q5Ans]);
+    sheet.appendRow(["✅ BEKLENEN YANIT:", "10 Tur, Saat Yönünde"]);
+    sheet.getRange(sheet.getLastRow(), 1, 1, 2).setFontColor("#15803d").setBackground("#f0fdf4");
     sheet.appendRow(["📝 5. Soru Puanı (Max 10):", q5Score]);
     var q5ScoreRow = sheet.getLastRow();
     
@@ -88,29 +94,31 @@ function doPost(e) {
     var q6Clean = q6Ans.replace(/\s+/g, "");
     var q6Score = (q6Clean.indexOf("23514") !== -1) ? 10 : 0;
     sheet.appendRow(["🧠 6. SORU MANTIK YANITI (Şifre Çözme):", q6Ans]);
+    sheet.appendRow(["✅ BEKLENEN YANIT:", "23514"]);
+    sheet.getRange(sheet.getLastRow(), 1, 1, 2).setFontColor("#15803d").setBackground("#f0fdf4");
     sheet.appendRow(["📝 6. Soru Puanı (Max 10):", q6Score]);
     var q6ScoreRow = sheet.getLastRow();
     
     // --- 7. SORU (SİMÜLATÖR 1 - Rota Takibi) ---
     var q7HakText = " (Kullanılan Hak: " + (data.q7SimAttemptsUsed || 0) + "/3)";
-    sheet.appendRow(["🤖 7. SORU SİMÜLATÖR KODU" + q7HakText + ":", ""]);
-    sheet.getRange(sheet.getLastRow(), 1, 1, 2).setFontWeight("bold").setBackground("#e0f2fe");
+    sheet.appendRow(["🤖 7. SORU SİMÜLATÖR KODU" + q7HakText + ":", "", "BEKLENEN ÇÖZÜM: Siyah çizgi izleme algoritması kontrol edilmeli"]);
+    sheet.getRange(sheet.getLastRow(), 1, 1, 3).setFontWeight("bold").setBackground("#e0f2fe");
     var q7Lines = (data.q7Answer || "(Yanıt verilmedi)").split("\n");
     for (var k = 0; k < q7Lines.length; k++) {
-      if (q7Lines[k].trim() !== "") sheet.appendRow(["", q7Lines[k]]);
+      if (q7Lines[k].trim() !== "") sheet.appendRow(["", q7Lines[k], ""]);
     }
-    sheet.appendRow(["📝 7. Soru Puanı (Max 15):", (data.q7Answer && data.q7Answer !== "(Yanıt verilmedi)") ? 15 : 0]);
+    sheet.appendRow(["📝 7. Soru Puanı (Max 15):", (data.q7Answer && data.q7Answer !== "(Yanıt verilmedi)") ? 15 : 0, ""]);
     var q7ScoreRow = sheet.getLastRow();
     
     // --- 8. SORU (SİMÜLATÖR 2 - Renk Şeritleri) ---
     var q8HakText = " (Kullanılan Hak: " + (data.q8SimAttemptsUsed || 0) + "/3)";
-    sheet.appendRow(["🤖 8. SORU SİMÜLATÖR KODU" + q8HakText + ":", ""]);
-    sheet.getRange(sheet.getLastRow(), 1, 1, 2).setFontWeight("bold").setBackground("#e0f2fe");
+    sheet.appendRow(["🤖 8. SORU SİMÜLATÖR KODU" + q8HakText + ":", "", "BEKLENEN ÇÖZÜM: Renklere göre hareket algoritması kontrol edilmeli"]);
+    sheet.getRange(sheet.getLastRow(), 1, 1, 3).setFontWeight("bold").setBackground("#e0f2fe");
     var q8Lines = (data.q8Answer || "(Yanıt verilmedi)").split("\n");
     for (var m = 0; m < q8Lines.length; m++) {
-      if (q8Lines[m].trim() !== "") sheet.appendRow(["", q8Lines[m]]);
+      if (q8Lines[m].trim() !== "") sheet.appendRow(["", q8Lines[m], ""]);
     }
-    sheet.appendRow(["📝 8. Soru Puanı (Max 15):", (data.q8Answer && data.q8Answer !== "(Yanıt verilmedi)") ? 15 : 0]);
+    sheet.appendRow(["📝 8. Soru Puanı (Max 15):", (data.q8Answer && data.q8Answer !== "(Yanıt verilmedi)") ? 15 : 0, ""]);
     var q8ScoreRow = sheet.getLastRow();
     
     // --- HESAPLAMA (Tüm dillerde hatasız çalışan doğrudan + ile toplama) ---
