@@ -38,13 +38,23 @@ const INITIAL_BLOCKS = [
         ]
     },
     {
-        id: 'mot_move_steer',
+        id: 'mot_move_steer_right',
         category: 'hareket',
         type: 'statement',
-        text: '[ {dir} ▼ ] [ {angle} ] , [ {val} ] [ {unit} ▼ ] hareket ettir',
+        text: '[ {steer} ] , [ {val} ] [ {unit} ▼ ] hareket ettir',
         inputs: [
-            { id: 'dir', type: 'select', options: ['sağ', 'sol', 'düz'], default: 'sağ' },
-            { id: 'angle', type: 'number', default: 30 },
+            { id: 'steer', type: 'text', default: 'sağ: 90' },
+            { id: 'val', type: 'number', default: 10 },
+            { id: 'unit', type: 'select', options: ['tur', 'derece', 'saniye'], default: 'tur' }
+        ]
+    },
+    {
+        id: 'mot_move_steer_left',
+        category: 'hareket',
+        type: 'statement',
+        text: '[ {steer} ] , [ {val} ] [ {unit} ▼ ] hareket ettir',
+        inputs: [
+            { id: 'steer', type: 'text', default: 'sol: 90' },
             { id: 'val', type: 'number', default: 10 },
             { id: 'unit', type: 'select', options: ['tur', 'derece', 'saniye'], default: 'tur' }
         ]
