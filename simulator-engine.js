@@ -6,76 +6,176 @@
 (function(window) {
     'use strict';
 
-    // Scale: 1 cm = 4 pixels
-    const SCALE = 4;
+    // Scale: 1 cm = 20 pixels (1 grid square = 1 cm)
+    const SCALE = 20;
 
     const TRACKS = {
         'q5': {
             id: 'q5',
-            name: '1. Simülatör Parkuru: Rota ve Bitiş',
+            name: '1. Simülatör Parkuru: Rota Takibi & Engeli Aşma (Baypas)',
             width: 480,
             height: 380,
-            robotStart: { x: 80, y: 310, angleDeg: 0 }, // 0 deg = North
-            goal: { x: 390, y: 270, radius: 34, desc: 'Bitiş Noktası' },
+            robotStart: { x: 80, y: 300, angleDeg: 0 }, // 0 deg = North
+            goal: { x: 380, y: 80, radius: 30, desc: 'Bitiş Noktası' },
+            obstacle: { x: 55, y: 90, w: 50, h: 32 },
             drawBackground: function(ctx, sim) {
                 drawGrid(ctx, 480, 380);
 
-                // Asfalt / Yol Koridoru
+                // 1. Asfalt / Yol Koridoru
                 ctx.save();
                 ctx.strokeStyle = '#e2e8f0';
                 ctx.lineWidth = 44;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
+
+                // Doğrudan engele giden kapalı yol koridoru
                 ctx.beginPath();
-                ctx.moveTo(80, 310);
-                ctx.lineTo(80, 150);
-                ctx.lineTo(270, 150);
-                ctx.lineTo(270, 270);
-                ctx.lineTo(390, 270);
+                ctx.moveTo(80, 300);
+                ctx.lineTo(80, 115);
                 ctx.stroke();
 
-                // Orta Kılavuz Çizgisi
+                // Baypas (Açık Detour) yol koridoru
+                ctx.beginPath();
+                ctx.moveTo(80, 160);
+                ctx.lineTo(240, 160);
+                ctx.lineTo(240, 80);
+                ctx.lineTo(380, 80);
+                ctx.stroke();
+
+                // Kılavuz Çizgileri
+                // Açık baypas çizgisi (Koyu lacivert-gri)
                 ctx.strokeStyle = '#334155';
                 ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(80, 300);
+                ctx.lineTo(80, 160);
+                ctx.lineTo(240, 160);
+                ctx.lineTo(240, 80);
+                ctx.lineTo(380, 80);
                 ctx.stroke();
+
+                // Kapalı engele giden kesikli çizgi
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(80, 160);
+                ctx.lineTo(80, 125);
+                ctx.stroke();
+                ctx.setLineDash([]);
                 ctx.restore();
 
-                // Start area
+                // Detour mesafe etiketleri (Öğrencilerin kare saymasını kolaylaştıran rehber)
+                ctx.save();
+                ctx.fillStyle = '#475569';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('⬆ 7 cm', 52, 220);
+                ctx.fillText('8 cm ➔', 160, 150);
+                ctx.fillText('⬆ 4 cm', 216, 120);
+                ctx.fillText('7 cm ➔', 310, 70);
+                ctx.restore();
+
+                // Başlangıç Alanı
                 ctx.save();
                 ctx.fillStyle = 'rgba(34, 197, 94, 0.2)';
                 ctx.strokeStyle = '#22c55e';
                 ctx.lineWidth = 2.5;
                 ctx.beginPath();
-                ctx.roundRect(55, 285, 50, 50, 8);
+                ctx.roundRect(55, 275, 50, 50, 8);
                 ctx.fill();
                 ctx.stroke();
                 ctx.fillStyle = '#15803d';
                 ctx.font = 'bold 10px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('BAŞLANGIÇ', 80, 314);
+                ctx.fillText('BAŞLANGIÇ', 80, 304);
                 ctx.restore();
 
-                // Target Pad (Bitiş Alanı)
+                // ⛔ ENGEL Alanı
+                ctx.save();
+                // Kırmızı Sensör Uyarı Çizgisi
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(55, 124, 50, 12);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 8px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('UYARI / DUR', 80, 133);
+
+                // Engel Barikatı
+                ctx.fillStyle = '#dc2626';
+                ctx.strokeStyle = '#991b1b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(55, 90, 50, 32, 6);
+                ctx.fill();
+                ctx.stroke();
+
+                // Barikat Çizgileri
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                for (let sx = 58; sx < 105; sx += 12) {
+                    ctx.beginPath();
+                    ctx.moveTo(sx, 120);
+                    ctx.lineTo(sx + 10, 92);
+                    ctx.stroke();
+                }
+
+                // Engel Metni
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('⛔ ENGEL', 80, 107);
+                ctx.fillStyle = '#fecaca';
+                ctx.font = '8px sans-serif';
+                ctx.fillText('KAPALI YOL', 80, 117);
+                ctx.restore();
+
+                // Hedef Pad (Bitiş Alanı)
                 ctx.save();
                 ctx.fillStyle = 'rgba(234, 179, 8, 0.25)';
                 ctx.strokeStyle = '#eab308';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.arc(390, 270, 30, 0, Math.PI * 2);
+                ctx.arc(380, 80, 30, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.stroke();
 
                 ctx.fillStyle = '#854d0e';
                 ctx.font = 'bold 11px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('BİTİŞ 🏁', 390, 274);
+                ctx.fillText('BİTİŞ 🏁', 380, 84);
                 ctx.restore();
             },
             getSurfaceColor: function(x, y) {
+                // Engel önündeki kırmızı uyarı alanı (x: 55-105, y: 115-138)
+                if (x >= 55 && x <= 105 && y >= 115 && y <= 138) return 'kırmızı';
+                // Hedef sarı alanı
+                if (Math.hypot(x - 380, y - 80) <= 30) return 'sarı';
+                // Başlangıç yeşil alanı
+                if (x >= 55 && x <= 105 && y >= 275 && y <= 325) return 'yeşil';
+
+                // Kılavuz çizgileri üzerindeyse siyah (±8px)
+                if (Math.abs(x - 80) <= 8 && y >= 160 && y <= 300) return 'siyah';
+                if (Math.abs(y - 160) <= 8 && x >= 80 && x <= 240) return 'siyah';
+                if (Math.abs(x - 240) <= 8 && y >= 80 && y <= 160) return 'siyah';
+                if (Math.abs(y - 80) <= 8 && x >= 240 && x <= 380) return 'siyah';
+
                 return 'beyaz';
             },
-            validateMission: function(robot) {
-                const dist = Math.hypot(robot.x - 390, robot.y - 270);
+            checkCollision: function(robot) {
+                const rLeft = robot.x - robot.width / 2;
+                const rRight = robot.x + robot.width / 2;
+                const rTop = robot.y - robot.height / 2;
+                const rBottom = robot.y + robot.height / 2;
+
+                const obsLeft = 55, obsRight = 105, obsTop = 90, obsBottom = 125;
+                return (rLeft < obsRight && rRight > obsLeft && rTop < obsBottom && rBottom > obsTop);
+            },
+            validateMission: function(robot, state) {
+                if (state && state.hasCollided) return false;
+                if (this.checkCollision(robot)) return false;
+
+                const dist = Math.hypot(robot.x - 380, robot.y - 80);
                 return dist < 36;
             }
         },
@@ -228,9 +328,11 @@
         ctx.fillRect(0, 0, w, h);
 
         ctx.save();
+        const step = 20;
+
+        // İnce ızgara çizgileri (Her kare 1 cm = 20px)
         ctx.strokeStyle = '#e2e8f0';
         ctx.lineWidth = 1;
-        const step = 20;
         for (let x = 0; x <= w; x += step) {
             ctx.beginPath();
             ctx.moveTo(x, 0);
@@ -243,6 +345,37 @@
             ctx.lineTo(w, y);
             ctx.stroke();
         }
+
+        // 5 cm Belirgin Çizgileri (Her 100px)
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1.5;
+        for (let x = 0; x <= w; x += 100) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+            ctx.stroke();
+        }
+        for (let y = 0; y <= h; y += 100) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+        }
+
+        // Sol üst köşe ölçek rozeti
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(8, 8, 148, 22, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#334155';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('📏 1 Kare = 1 cm (20 px)', 14, 23);
+
         ctx.restore();
     }
 
@@ -253,18 +386,20 @@
             this.currentTrackId = 'q5';
             this.robot = {
                 x: 80,
-                y: 310,
+                y: 300,
                 angleDeg: 0,
                 width: 38,
                 height: 48,
                 colorSensorDist: 26,
-                ultrasonicDist: 0,
+                ultrasonicDist: 50,
                 detectedColor: 'beyaz'
             };
 
             this.state = {
                 isRunning: false,
                 isCancelled: false,
+                hasCollided: false,
+                isMovingContinuous: false,
                 speedMultiplier: 1.0,
                 movementMotors: null,
                 activatedMotors: { 'A': false, 'B': false, 'C': false, 'D': false }
@@ -367,6 +502,10 @@
             this.robot.detectedColor = 'beyaz';
             this.robot.ultrasonicDist = 50;
 
+            this.state.isCancelled = false;
+            this.state.isRunning = false;
+            this.state.hasCollided = false;
+            this.state.isMovingContinuous = false;
             this.state.movementMotors = null;
             this.state.activatedMotors = { 'A': false, 'B': false, 'C': false, 'D': false };
             this.setMissionStatus('Hazır', 'default');
@@ -377,6 +516,7 @@
         stop() {
             this.state.isRunning = false;
             this.state.isCancelled = true;
+            this.state.isMovingContinuous = false;
             if (this.uiElements.btnPlay) {
                 this.uiElements.btnPlay.innerHTML = '▶ Kodu Simüle Et';
                 this.uiElements.btnPlay.classList.remove('btn-running');
@@ -418,8 +558,33 @@
                 this.uiElements.pillColor.style.color = cInfo.text;
             }
 
+            // Ultrasonik Mesafe Hesaplama (cm)
+            let uDist = 50;
+            const normAngle = ((Math.round(this.robot.angleDeg) % 360) + 360) % 360;
+            if (this.currentTrackId === 'q5' || this.currentTrackId === 'q7') {
+                if ((normAngle >= 340 || normAngle <= 20) && this.robot.x >= 45 && this.robot.x <= 115 && this.robot.y > 125) {
+                    uDist = Math.max(0, Math.round((this.robot.y - 24 - 125) / SCALE));
+                } else if (normAngle >= 70 && normAngle <= 110) {
+                    uDist = Math.max(0, Math.round((this.canvas.width - this.robot.x - 20) / SCALE));
+                } else if (normAngle >= 250 && normAngle <= 290) {
+                    uDist = Math.max(0, Math.round((this.robot.x - 20) / SCALE));
+                } else {
+                    uDist = Math.max(0, Math.round((this.robot.y - 20) / SCALE));
+                }
+            } else {
+                if (normAngle >= 70 && normAngle <= 110) {
+                    uDist = Math.max(0, Math.round((this.canvas.width - this.robot.x - 20) / SCALE));
+                } else {
+                    uDist = Math.max(0, Math.round((this.robot.x - 20) / SCALE));
+                }
+            }
+            this.robot.ultrasonicDist = uDist;
+
+            if (this.uiElements.txtDistance) {
+                this.uiElements.txtDistance.textContent = uDist + ' cm';
+            }
+
             if (this.uiElements.txtHeading) {
-                const normAngle = ((Math.round(this.robot.angleDeg) % 360) + 360) % 360;
                 this.uiElements.txtHeading.textContent = normAngle + '°';
             }
 
@@ -530,7 +695,7 @@
         animateMove(distCm, isForward) {
             isForward = isForward !== undefined ? isForward : true;
             return new Promise((resolve) => {
-                if (this.state.isCancelled) return resolve();
+                if (this.state.isCancelled || this.state.hasCollided) return resolve();
 
                 const pixels = distCm * SCALE;
                 const rad = (this.robot.angleDeg - 90) * (Math.PI / 180);
@@ -543,11 +708,38 @@
                 const targetX = Math.max(20, Math.min(this.canvas.width - 20, startX + dx));
                 const targetY = Math.max(20, Math.min(this.canvas.height - 20, startY + dy));
 
-                const duration = Math.max(400, Math.min(2200, Math.abs(distCm) * 35));
+                const mult = this.state.speedMultiplier || 1.0;
+
+                // Instant execution for automated headless testing
+                if (mult >= 10) {
+                    const track = TRACKS[this.currentTrackId];
+                    if (track && typeof track.checkCollision === 'function') {
+                        const steps = 25;
+                        for (let s = 1; s <= steps; s++) {
+                            const ix = startX + (targetX - startX) * (s / steps);
+                            const iy = startY + (targetY - startY) * (s / steps);
+                            if (track.checkCollision({ x: ix, y: iy, width: this.robot.width, height: this.robot.height })) {
+                                this.robot.x = ix;
+                                this.robot.y = iy;
+                                this.state.hasCollided = true;
+                                this.state.isCancelled = true;
+                                this.setMissionStatus('💥 Engelle Çarpışma Gerçekleşti!', 'error');
+                                this.render();
+                                return resolve();
+                            }
+                        }
+                    }
+                    this.robot.x = targetX;
+                    this.robot.y = targetY;
+                    this.render();
+                    return resolve();
+                }
+
+                const duration = Math.max(20, Math.min(2200, (Math.abs(distCm) * 85) / mult));
                 const startTime = performance.now();
 
                 const step = (now) => {
-                    if (this.state.isCancelled) return resolve();
+                    if (this.state.isCancelled || this.state.hasCollided) return resolve();
 
                     const elapsed = now - startTime;
                     const progress = Math.min(1.0, elapsed / duration);
@@ -555,6 +747,16 @@
 
                     this.robot.x = startX + (targetX - startX) * ease;
                     this.robot.y = startY + (targetY - startY) * ease;
+
+                    // Obstacle Collision Check
+                    const track = TRACKS[this.currentTrackId];
+                    if (track && typeof track.checkCollision === 'function' && track.checkCollision(this.robot)) {
+                        this.state.hasCollided = true;
+                        this.state.isCancelled = true;
+                        this.render();
+                        this.setMissionStatus('💥 Engelle Çarpışma Gerçekleşti!', 'error');
+                        return resolve();
+                    }
 
                     this.render();
 
@@ -572,17 +774,26 @@
         animateRotate(degrees, isRight) {
             isRight = isRight !== undefined ? isRight : true;
             return new Promise((resolve) => {
-                if (this.state.isCancelled) return resolve();
+                if (this.state.isCancelled || this.state.hasCollided) return resolve();
 
                 const startAngle = this.robot.angleDeg;
                 const deltaAngle = (isRight ? 1 : -1) * degrees;
                 const targetAngle = startAngle + deltaAngle;
 
-                const duration = Math.max(350, Math.min(1600, Math.abs(degrees) * 8));
+                const mult = this.state.speedMultiplier || 1.0;
+
+                // Instant execution for automated headless testing
+                if (mult >= 10) {
+                    this.robot.angleDeg = targetAngle;
+                    this.render();
+                    return resolve();
+                }
+
+                const duration = Math.max(15, Math.min(1400, (Math.abs(degrees) * 6) / mult));
                 const startTime = performance.now();
 
                 const step = (now) => {
-                    if (this.state.isCancelled) return resolve();
+                    if (this.state.isCancelled || this.state.hasCollided) return resolve();
 
                     const elapsed = now - startTime;
                     const progress = Math.min(1.0, elapsed / duration);
@@ -610,6 +821,8 @@
 
             this.state.isRunning = true;
             this.state.isCancelled = false;
+            this.state.hasCollided = false;
+            this.state.isMovingContinuous = false;
             this.state.movementMotors = null;
             this.state.activatedMotors = { 'A': false, 'B': false, 'C': false, 'D': false };
             this.updateTelemetry();
@@ -622,21 +835,25 @@
 
             try {
                 for (const b of blockList) {
-                    if (this.state.isCancelled) break;
+                    if (this.state.isCancelled || this.state.hasCollided) break;
                     await this.executeSingleBlock(b);
                 }
 
                 if (!this.state.isCancelled) {
                     const track = TRACKS[this.currentTrackId];
-                    const isSuccess = track && track.validateMission ? track.validateMission(this.robot, this.state) : false;
-
-                    if (isSuccess) {
-                        this.setMissionStatus('🎉 Tebrikler! Görev Başarılı!', 'success');
-                        if (this.uiElements.btnSubmitCode) {
-                            this.uiElements.btnSubmitCode.classList.add('pulse-highlight');
-                        }
+                    if (this.state.hasCollided) {
+                        this.setMissionStatus('💥 Engelle Çarpışma Gerçekleşti! Alternatif rotayı kullanmalısınız.', 'error');
                     } else {
-                        this.setMissionStatus('Tamamlandı', 'info');
+                        const isSuccess = track && track.validateMission ? track.validateMission(this.robot, this.state) : false;
+
+                        if (isSuccess) {
+                            this.setMissionStatus('🎉 Tebrikler! Görev Başarılı!', 'success');
+                            if (this.uiElements.btnSubmitCode) {
+                                this.uiElements.btnSubmitCode.classList.add('pulse-highlight');
+                            }
+                        } else {
+                            this.setMissionStatus('Tamamlandı (Hedefe Ulaşılamadı)', 'info');
+                        }
                     }
                 }
             } catch (err) {
@@ -644,6 +861,7 @@
                 this.setMissionStatus('Hata Oluştu', 'error');
             } finally {
                 this.state.isRunning = false;
+                this.state.isMovingContinuous = false;
                 if (typeof window.onSimulatorFinishState === 'function') {
                     window.onSimulatorFinishState();
                 } else if (this.uiElements.btnPlay) {
@@ -654,7 +872,7 @@
         }
 
         async executeSingleBlock(b) {
-            if (this.state.isCancelled) return;
+            if (this.state.isCancelled || this.state.hasCollided) return;
 
             const inputs = b.inputs || {};
             const id = b.id;
@@ -673,7 +891,16 @@
             }
 
             // 1. HAREKET (Movement) BLOKLARI
-            const isMovementBlock = (id === 'mov_move_dir' || id === 'mov_start_moving_dir' || id === 'mov_start_dual_speed' || id === 'mov_move_steer_dist' || id === 'mov_start_steer_only');
+            const isMovementBlock = (
+                id === 'mov_move_dir' || 
+                id === 'mov_start_moving_dir' || 
+                id === 'mov_start_dual_speed' || 
+                id === 'mov_move_steer_dist' || 
+                id === 'mov_start_steer_only' ||
+                id === 'mot_move_steer_right' ||
+                id === 'mot_move_steer_left'
+            );
+
             if (isMovementBlock) {
                 // DONANIM KONTROLÜ: Hareket motorları (A+B) girilmese de simüle edebilsin (Öğretmen puan kırar).
                 if (!this.state.movementMotors) {
@@ -687,18 +914,33 @@
                     const val = parseFloat(inputs.val) || 10;
                     const unit = inputs.unit || 'cm';
                     const distCm = unit === 'tur' ? val * 17.5 : (unit === 'derece' ? (val / 360) * 17.5 : val);
-                    await this.animateMove(distCm, dir === '↑');
+                    const isForward = !String(dir).includes('↓') && !String(dir).includes('geri');
+                    await this.animateMove(distCm, isForward);
+                }
+                else if (id === 'mot_move_steer_right' || id === 'mot_move_steer_left') {
+                    const isRight = (id === 'mot_move_steer_right');
+                    let deg = 90;
+                    const steerStr = String(inputs.steer || '');
+                    const numMatch = steerStr.match(/\d+/);
+                    if (numMatch) {
+                        deg = parseInt(numMatch[0], 10);
+                    } else if (inputs.unit === 'derece' && inputs.val) {
+                        deg = parseFloat(inputs.val) || 90;
+                    }
+                    await this.animateRotate(deg, isRight);
                 }
                 else if (id === 'mov_start_moving_dir') {
                     const dir = inputs.dir || '↑';
-                    await this.animateMove(15, dir === '↑');
+                    const isForward = !String(dir).includes('↓') && !String(dir).includes('geri');
+                    this.state.isMovingContinuous = isForward;
+                    await this.animateMove(3, isForward);
                 }
                 else if (id === 'mov_start_dual_speed') {
                     const speedL = parseFloat(inputs.speedL !== undefined ? inputs.speedL : 50);
                     const speedR = parseFloat(inputs.speedR !== undefined ? inputs.speedR : 50);
 
                     if (speedL === speedR) {
-                        await this.animateMove(15, speedL >= 0);
+                        await this.animateMove(5, speedL >= 0);
                     } else if (speedL === -speedR) {
                         const isRight = speedL > speedR;
                         await this.animateRotate(90, isRight);
@@ -716,6 +958,7 @@
                 }
             }
             else if (id === 'mov_stop') {
+                this.state.isMovingContinuous = false;
                 await new Promise(r => setTimeout(r, 200));
             }
 
@@ -740,7 +983,7 @@
             else if (id === 'ctrl_repeat') {
                 const count = parseInt(inputs.count) || 1;
                 for (let i = 0; i < count; i++) {
-                    if (this.state.isCancelled) break;
+                    if (this.state.isCancelled || this.state.hasCollided) break;
                     if (b.nestedThen) {
                         for (const child of b.nestedThen) {
                             await this.executeSingleBlock(child);
@@ -755,8 +998,11 @@
                 let isMatch = false;
                 
                 if (condType.includes('renk') && curColor === reqColor) isMatch = true;
-                else if (condType.includes('mesafe')) isMatch = false; // Mocked
-                else if (condType.includes('sapma')) isMatch = false; // Mocked
+                else if (condType.includes('mesafe')) {
+                    const targetDist = parseFloat(inputs.dist || inputs.val || 15);
+                    if (this.robot.ultrasonicDist <= targetDist) isMatch = true;
+                }
+                else if (condType.includes('sapma')) isMatch = false;
 
                 if (isMatch) {
                     if (b.nestedThen) {
@@ -773,8 +1019,11 @@
                 let isMatch = false;
                 
                 if (condType.includes('renk') && curColor === reqColor) isMatch = true;
-                else if (condType.includes('mesafe')) isMatch = false; // Mocked
-                else if (condType.includes('sapma')) isMatch = false; // Mocked
+                else if (condType.includes('mesafe')) {
+                    const targetDist = parseFloat(inputs.dist || inputs.val || 15);
+                    if (this.robot.ultrasonicDist <= targetDist) isMatch = true;
+                }
+                else if (condType.includes('sapma')) isMatch = false;
 
                 if (isMatch) {
                     if (b.nestedThen) {
@@ -795,29 +1044,40 @@
                 const reqColor = (inputs.color || '').toLowerCase();
                 
                 let loops = 0;
-                while (!this.state.isCancelled && loops < 40) {
+                while (!this.state.isCancelled && !this.state.hasCollided && loops < 50) {
                     loops++;
                     const curColor = (this.robot.detectedColor || '').toLowerCase();
+                    const curDist = this.robot.ultrasonicDist;
                     let isMatch = false;
                     
-                    if (condType.includes('renk') && curColor === reqColor) isMatch = true;
-                    else if (condType.includes('mesafe')) isMatch = false;
-                    else if (condType.includes('sapma')) isMatch = false;
+                    if (condType.includes('renk') && curColor === reqColor) {
+                        isMatch = true;
+                    } else if (condType.includes('mesafe')) {
+                        const targetDist = parseFloat(inputs.dist || inputs.val || 15);
+                        if (curDist <= targetDist) isMatch = true;
+                    } else if (condType.includes('sapma')) {
+                        isMatch = false;
+                    }
 
                     if (isMatch) break;
 
                     if (b.nestedThen && b.nestedThen.length > 0) {
                         for (const child of b.nestedThen) {
-                            if (this.state.isCancelled) break;
+                            if (this.state.isCancelled || this.state.hasCollided) break;
                             await this.executeSingleBlock(child);
                         }
                     } else {
-                        await new Promise(r => setTimeout(r, 200));
+                        if (this.state.isMovingContinuous) {
+                            await this.animateMove(1, true); // advance 1 cm (20px) per check
+                        } else {
+                            await new Promise(r => setTimeout(r, 150));
+                        }
                     }
                 }
             }
 
-            await new Promise(r => setTimeout(r, 120));
+            const mult = this.state.speedMultiplier || 1.0;
+            await new Promise(r => setTimeout(r, Math.max(5, 100 / mult)));
         }
 
         takeSnapshot() {

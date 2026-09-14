@@ -8,18 +8,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
-    <!-- Main Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=2">
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="style.css?v=18">
 </head>
 <body>
 
     <!-- APP HEADER -->
     <header class="app-header">
         <div class="header-brand">
-            <span class="spike-logo-badge">THUNDER ⚡ BOTS</span>
             <h1>Teknik ve Proje Kulübü Değerlendirme Sınavı</h1>
         </div>
         <div class="header-student-info">
+            <!-- EXAM TIMER BADGE -->
+            <div id="examTimerBadge" class="exam-timer-badge" style="display: none;">
+                <span class="timer-icon">⏱️</span>
+                <span class="timer-label">Kalan Süre:</span>
+                <span id="examTimerText" class="timer-time">35:00</span>
+            </div>
             <div id="studentPill" class="student-pill" style="display: none;">
                 <span class="user-icon">👤</span>
                 <span id="studentInfoText"></span>
@@ -29,6 +34,11 @@
             </button>
             <div id="teacherTestBanner" class="teacher-test-banner" style="display: none;">
                 <span class="test-mode-badge">🧪 Öğretmen Test Modu</span>
+                <div class="teacher-timer-controls">
+                    <button id="btnFastForward15Min" class="btn-fast-forward" title="Süreyi son 15 dakikaya sar (15:00)">⏩ 15 Dk</button>
+                    <button id="btnFastForward5Min" class="btn-fast-forward" title="Süreyi son 5 dakikaya sar (05:00)">⏩ 5 Dk</button>
+                    <button id="btnFastForwardExpire" class="btn-fast-forward btn-danger-ff" title="Süreyi doldu olarak sıfırla (00:00)">⏩ Süreyi Bitir</button>
+                </div>
                 <button id="btnReturnToTeacherDashboard" class="btn-return-teacher" title="Öğretmen Yönetim Paneline Dön">
                     ⚙️ Öğretmen Paneli
                 </button>
@@ -64,7 +74,7 @@
                 <div class="question-meta">
                     <div class="meta-left">
                         <span class="badge-question-num" id="questionBadge">Soru 1 / 8</span>
-                        <h2 id="questionTitle">1. Soru: Robotun Hareket Rotası</h2>
+                        <h2 id="questionTitle">1. Soru: Eşkenar Üçgen Rotası (Algoritma & Geometri)</h2>
                     </div>
                     <div class="meta-right">
                         <button id="btnToggleBanner" class="btn-banner-toggle" title="Yönergeyi Daralt / Genişlet">
@@ -76,11 +86,7 @@
                 <!-- GENİŞLETİLEBİLİR / DARALTILABİLİR YÖNERGE İÇERİĞİ -->
                 <div id="questionDetailsContent" class="question-details-content">
                     <p id="questionDesc" class="question-desc">
-                        Aşağıda verilen komutların kodlamasını yapınız:<br>
-                        • Robot 10 santimetre ileriye gitsin.<br>
-                        • 90 derece sağa dönsün.<br>
-                        • 20 santimetre geriye gitsin.<br>
-                        • Kodlamayı bitir.
+                        Robotunuzun sahada her bir kenar uzunluğu tam olarak 40 cm olan bir eşkenar üçgen çizerek başlangıç noktasına geri dönmesini sağlayan kodu yazınız.
                     </p>
 
                     <!-- PORT HARİTASI BILGISI -->
@@ -148,14 +154,110 @@
                         <div class="paper-card-tip">
                             💡 <b>Yönerge:</b> Lütfen bu soruyu <b>size verilen boş kağıda</b> çözünüz. Bulduğunuz sonucu aşağıdaki kutucuğa yazınız.
                         </div>
-                        <div class="paper-input-group">
+                        <div class="paper-input-group" id="defaultPaperInputGroup">
                             <label for="inputPaperAnswer">Cevabınız (Sayı veya Sonuç):</label>
                             <input type="text" id="inputPaperAnswer" class="paper-input" placeholder="Cevabınızı buraya yazınız..." autocomplete="off">
                         </div>
+
+                        <!-- HEDEF TAHTASI ÖZEL INPUT GRUBU (SORU 5 İÇİN) -->
+                        <div id="targetBoardInputsGroup" class="target-board-inputs-group" style="display: none;">
+                            <div class="target-inputs-grid">
+                                <div class="target-input-card">
+                                    <span class="target-chip chip-blue">🎯 13 Puanlık Bölge</span>
+                                    <div class="target-input-row">
+                                        <input type="number" id="targetInput13" class="target-num-input" min="0" max="20" placeholder="0">
+                                        <span class="unit-label">Ok</span>
+                                    </div>
+                                </div>
+                                <div class="target-input-card">
+                                    <span class="target-chip chip-yellow">🎯 21 Puanlık Bölge</span>
+                                    <div class="target-input-row">
+                                        <input type="number" id="targetInput21" class="target-num-input" min="0" max="20" placeholder="0">
+                                        <span class="unit-label">Ok</span>
+                                    </div>
+                                </div>
+                                <div class="target-input-card">
+                                    <span class="target-chip chip-teal">🎯 28 Puanlık Bölge</span>
+                                    <div class="target-input-row">
+                                        <input type="number" id="targetInput28" class="target-num-input" min="0" max="20" placeholder="0">
+                                        <span class="unit-label">Ok</span>
+                                    </div>
+                                </div>
+                                <div class="target-input-card">
+                                    <span class="target-chip chip-red">🎯 32 Puanlık Bölge</span>
+                                    <div class="target-input-row">
+                                        <input type="number" id="targetInput32" class="target-num-input" min="0" max="20" placeholder="0">
+                                        <span class="unit-label">Ok</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="paper-status" id="paperSaveStatus" style="display: none;">
                             ✓ Yanıtınız anında kaydedildi.
                         </div>
 
+                    </div>
+                </div>
+
+                <!-- SİHİRLİ PİRAMİT İNTERAKTİF ÇÖZÜM ALANI (SORU 3 İÇİN) -->
+                <div id="pyramidAnswerContainer" class="pyramid-answer-container" style="display: none;">
+                    <div class="pyramid-card">
+                        <div class="pyramid-card-header">
+                            <span class="pyramid-badge">🔮 MANTIK & MUHAKEME ÇÖZÜMÜ</span>
+                            <h3>Sihirli Piramit Rotası</h3>
+                        </div>
+
+                        <!-- ÇÖZÜMLÜ ÖRNEK VE REHBER PANELİ -->
+                        <div class="pyramid-guide-box">
+                            <div class="pyramid-guide-img-col">
+                                <img src="pyramid_example.png" alt="Sihirli Piramit Çözümlü Örnek" class="pyramid-example-img">
+                                <span class="pyramid-guide-caption">📘 Çözümlü Örnek (6 Basamak)</span>
+                            </div>
+                            <div class="pyramid-guide-rules-col">
+                                <div class="pyramid-guide-heading">Sihirli Piramit Nasıl Çözülür?</div>
+                                <ul class="pyramid-rules-list">
+                                    <li><b>Başlangıç ve Bitiş:</b> Piramidin en tepesindeki daireden başlayıp en alt satıra kadar birbirine bağlı komşu daireleri seçiniz.</li>
+                                    <li><b>Satır Kuralı:</b> Her satırdan <b>yalnızca bir daire</b> seçebilirsiniz.</li>
+                                    <li><b>Bağlantı Kuralı:</b> Bir daireden yalnızca hemen altındaki <b>sol veya sağ çapraz komşusuna</b> inilebilir.</li>
+                                    <li><b>Tekil Sayı Kuralı:</b> Rota üzerindeki 10 dairede, <b>1'den 10'a kadar her sayı tam olarak bir kez</b> kullanılmalıdır (aynı sayı iki kez seçilemez).</li>
+                                </ul>
+                                <div class="pyramid-guide-note">
+                                    💡 <i>Yukarıdaki örnekte 4 ➔ 3 ➔ 2 ➔ 5 ➔ 1 ➔ 6 rotası oluşturulmuş ve 1'den 6'ya her sayı birer kez kullanılmıştır.</i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- İNTERAKTİF PİRAMİT ÇALIŞMA ALANI -->
+                        <div class="pyramid-board-wrapper">
+                            <div class="pyramid-instruction-tip">
+                                🎯 <b>GÖREV:</b> Aşağıdaki dairelerin üzerine tıklayarak tepeden tabana doğru <b>1'den 10'a kadar her sayının birer kez geçtiği</b> yolu tamamlayınız.
+                            </div>
+                            <div id="pyramidBoard" class="pyramid-board">
+                                <svg id="pyramidSvgLines" class="pyramid-svg-lines"></svg>
+                                <div id="pyramidRowsContainer" class="pyramid-rows-container"></div>
+                            </div>
+                        </div>
+
+                        <!-- DURUM VE SAYI TAKİP PANELİ -->
+                        <div class="pyramid-status-panel">
+                            <div class="pyramid-status-row">
+                                <span class="status-label">Seçilen Rota:</span>
+                                <span id="pyramidPathText" class="path-text">(Dairelere tıklayarak rotanızı belirleyiniz)</span>
+                            </div>
+                            <div class="pyramid-status-row">
+                                <span class="status-label">Kullanılan Sayılar:</span>
+                                <div id="pyramidNumberBadges" class="number-badges-row"></div>
+                            </div>
+                            <div class="pyramid-actions-row">
+                                <button type="button" id="btnClearPyramid" class="btn-clear-pyramid">
+                                    ↺ Seçimleri Temizle
+                                </button>
+                                <span id="pyramidSaveStatus" class="pyramid-save-status" style="display: none;">
+                                    ✓ Yanıtınız anında kaydedildi.
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -212,6 +314,10 @@
                 <div class="telemetry-card">
                     <span class="telemetry-label">🎨 Renk Sensörü:</span>
                     <span class="telemetry-pill" id="simPillColor">Beyaz</span>
+                </div>
+                <div class="telemetry-card">
+                    <span class="telemetry-label">📏 Mesafe:</span>
+                    <span class="telemetry-val" id="simTxtDistance">50 cm</span>
                 </div>
                 <div class="telemetry-card">
                     <span class="telemetry-label">🧭 Yön Açısı:</span>
@@ -548,9 +654,31 @@
         <button id="btnCloseToast" class="btn-close-toast" title="Bildirimi Kapat">✕</button>
     </div>
 
+    <!-- SÜRE BİTTİ UYARI VE SEÇİM PENCERESİ -->
+    <div id="modalTimeExpired" class="modal-overlay" style="display: none;">
+        <div class="modal-card modal-timer-card">
+            <div class="modal-timer-header">
+                <span class="timer-modal-icon">⌛</span>
+                <h2>35 Dakikalık Sınav Süren Bitti!</h2>
+            </div>
+            <p class="modal-timer-desc">
+                Cevaplarını öğretmenine göndermeye hazır mısın?<br>
+                Eğer son kontrollerini yapmak istersen <b>2 dakikalık ek süre</b> kullanabilirsin.
+            </p>
+            <div class="modal-timer-actions">
+                <button type="button" id="btnSubmitNowOnExpiry" class="btn btn-primary btn-large">
+                    🚀 Cevaplarımı Gönder ve Bitir
+                </button>
+                <button type="button" id="btnUseExtensionTime" class="btn btn-warning btn-large">
+                    ⏱️ 2 Dakika Ek Süre Kullan
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- JS Logic -->
-    <script src="blocks-data.js?v=6"></script>
-    <script src="simulator-engine.js?v=6"></script>
-    <script src="app.js?v=6"></script>
+    <script src="blocks-data.js?v=16"></script>
+    <script src="simulator-engine.js?v=10"></script>
+    <script src="app.js?v=20"></script>
 </body>
 </html>

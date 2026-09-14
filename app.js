@@ -3,8 +3,8 @@
  * Multi-Stack Canvas Support: Event Hat Blocks and Custom Blocks spawn as independent parallel stacks!
  */
 
-// 🚀 E-TABLO BAĞLANTI AYARLARI VE ÖĞRETMEN YÖNETİMİ
-const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzmphPtbOyvx5OYNa2uANe7ztMwMzio_LpgFR43VU63VnaWZQkOZxe9obiSPVI0T1cO/exec';
+/// ⚙️ E-TABLO BAĞLANTI AYARLARI VE ÖĞRETMEN YÖNETİMİ
+const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxjGeBKvETpX66SNk-Pv0pLKYUTDWohce0MyHi9rxHgzUfAiHkJNZ2x3P4SM8rQSX_r/exec';
 const TEACHER_MASTER_PASSWORD = '26575982824.bati';
 const STORAGE_TEACHER_LOGGED = 'spike_teacher_authenticated';
 
@@ -70,6 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const paperAnswerContainer = document.getElementById('paperAnswerContainer');
     const inputPaperAnswer = document.getElementById('inputPaperAnswer');
     const paperSaveStatus = document.getElementById('paperSaveStatus');
+    const pyramidAnswerContainer = document.getElementById('pyramidAnswerContainer');
+    const pyramidRowsContainer = document.getElementById('pyramidRowsContainer');
+    const pyramidSvgLines = document.getElementById('pyramidSvgLines');
+    const pyramidPathText = document.getElementById('pyramidPathText');
+    const pyramidNumberBadges = document.getElementById('pyramidNumberBadges');
+    const btnClearPyramid = document.getElementById('btnClearPyramid');
+    const pyramidSaveStatus = document.getElementById('pyramidSaveStatus');
+    let pyramidSaveTimer = null;
     const hardwarePortMap = document.querySelector('.hardware-port-map');
     const questionBanner = document.getElementById('questionBanner');
     const btnToggleBanner = document.getElementById('btnToggleBanner');
@@ -312,18 +320,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const testPayload = {
                 timestamp: new Date().toLocaleString('tr-TR'),
-                studentName: 'TEST SİNYALİ (Öğretmen Paneli)',
-                studentClass: 'TEST',
-                secretDurationSec: 10,
+                studentName: 'CEVAP ANAHTARI (Örnek Çözümler)',
+                studentClass: 'ÖĞRETMEN',
+                secretDurationSec: 0,
                 secretHardwarePoints: 10,
-                q1Answer: 'Test Bağlantısı Başarılı ✓',
-                q2Answer: 'Test',
-                q3Answer: '9284',
-                q4Answer: '46 saniye',
-                q5Answer: '10 tur, saat yönünde',
-                q6Answer: '5-1-2-4-3 (Ortanca: 2)',
-                q7Answer: 'Test Rota Simülatörü',
-                q8Answer: 'Test Renk Simülatörü',
+                q1Answer: 'Örnek: 3 defa tekrarla [ 40 cm ileri git, sağa 120 derece dön ]',
+                q2Answer: 'Örnek: Olay [olana kadar bekle: (mesafe > 15)] -> [durdur] -> [90 sağa dön] -> [15 cm geri git] -> [sapma sıfırla]',
+                q3Answer: '6 -> 7 -> 1 -> 4 -> 2 -> 5 -> 3 -> 10 -> 8 -> 9',
+                q4Answer: 'Örnek Mantık: C:1, D:2, E:3, A:4, B:5 (İfadelerin tutarlılık testi)',
+                q5Answer: 'Örnek Çözüm: 2 adet 13, 2 adet 21, 1 adet 32 (Toplam 100)',
+                q6Answer: 'Örnek: Eşitliği sağlayan iki hatalı kutunun (sayı veya operatör) silinmesi',
+                q7Answer: 'Örnek Rota: 7cm ileri -> 90 sağa -> 15cm ileri -> 90 sola -> 15cm ileri -> 90 sola -> 15cm ileri -> 90 sağa -> hedefe git',
+                q8Answer: 'Örnek Renk: Sürekli tekrarla [ EĞER (renk = Kırmızı) İSE (hareketi durdur ve çık) DEĞİLSE (ileri sür) ]',
                 q7SimAttemptsUsed: 1,
                 q8SimAttemptsUsed: 1
             };
@@ -555,6 +563,172 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ⏰ SINAV GERİ SAYIM SAYACI (32 DK NORMAL + 2 DK UZATMA)
+    const TOTAL_EXAM_SECONDS = 32 * 60; // 32 dakika (1920 saniye)
+    const EXTENSION_SECONDS = 2 * 60;   // 2 dakika (120 saniye)
+    let examTimeRemaining = TOTAL_EXAM_SECONDS;
+    let isExtensionActive = false;
+    let examTimerInterval = null;
+    let warned15Min = false;
+    let warned5Min = false;
+
+    const examTimerBadge = document.getElementById('examTimerBadge');
+    const examTimerText = document.getElementById('examTimerText');
+    const modalTimeExpired = document.getElementById('modalTimeExpired');
+    const btnSubmitNowOnExpiry = document.getElementById('btnSubmitNowOnExpiry');
+    const btnUseExtensionTime = document.getElementById('btnUseExtensionTime');
+
+    function startExamTimer() {
+        if (examTimerInterval) clearInterval(examTimerInterval);
+        examTimeRemaining = TOTAL_EXAM_SECONDS;
+        isExtensionActive = false;
+        warned15Min = false;
+        warned5Min = false;
+
+        if (examTimerBadge) {
+            examTimerBadge.style.display = 'inline-flex';
+            examTimerBadge.classList.remove('warning-orange', 'warning-red');
+        }
+
+        updateExamTimerUI();
+        examTimerInterval = setInterval(tickExamTimer, 1000);
+    }
+
+    function tickExamTimer() {
+        examTimeRemaining--;
+        updateExamTimerUI();
+
+        const mins = Math.floor(examTimeRemaining / 60);
+        const secs = examTimeRemaining % 60;
+
+        if (!isExtensionActive) {
+            // Son 15 dk uyarısı (Sağ tarafta toast bildirim)
+            if (mins === 15 && secs === 0 && !warned15Min) {
+                warned15Min = true;
+                if (examTimerBadge) examTimerBadge.classList.add('warning-orange');
+                showStudentToast(
+                    '⚠️ Son 15 Dakika!',
+                    'Sınav sürenizin bitmesine 15 dakika kaldı. Lütfen yanıtlarınızı kontrol etmeyi unutmayın.'
+                );
+            }
+
+            // Son 5 dk uyarısı (Sağ tarafta toast bildirim)
+            if (mins === 5 && secs === 0 && !warned5Min) {
+                warned5Min = true;
+                if (examTimerBadge) {
+                    examTimerBadge.classList.remove('warning-orange');
+                    examTimerBadge.classList.add('warning-red');
+                }
+                showStudentToast(
+                    '⚠️ Son 5 Dakika!',
+                    'Sınavın bitmesine son 5 dakika kaldı! Lütfen cevaplarınızı kaydetmeyi unutmayın.'
+                );
+            }
+
+            // Süre bitti (35 dk doldu)
+            if (examTimeRemaining <= 0) {
+                clearInterval(examTimerInterval);
+                if (modalTimeExpired) modalTimeExpired.style.display = 'flex';
+            }
+        } else {
+            // Uzatma süresi içi (2 dk)
+            if (examTimeRemaining <= 0) {
+                clearInterval(examTimerInterval);
+                if (modalTimeExpired) modalTimeExpired.style.display = 'none';
+                showStudentToast('⌛ Süre Doldu!', 'Uzatma süreniz bitti. Cevaplarınız otomatik gönderiliyor...');
+                finishAndSubmitExam(true);
+            }
+        }
+    }
+
+    function updateExamTimerUI() {
+        if (!examTimerText) return;
+        const displaySecs = Math.max(0, examTimeRemaining);
+        const mins = Math.floor(displaySecs / 60);
+        const secs = displaySecs % 60;
+        const formatted = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        examTimerText.textContent = isExtensionActive ? `(Uzatma) ${formatted}` : formatted;
+    }
+
+    if (btnSubmitNowOnExpiry) {
+        btnSubmitNowOnExpiry.addEventListener('click', () => {
+            if (modalTimeExpired) modalTimeExpired.style.display = 'none';
+            finishAndSubmitExam(false);
+        });
+    }
+
+    if (btnUseExtensionTime) {
+        btnUseExtensionTime.addEventListener('click', () => {
+            if (modalTimeExpired) modalTimeExpired.style.display = 'none';
+            isExtensionActive = true;
+            examTimeRemaining = EXTENSION_SECONDS; // 2 dk
+            if (examTimerBadge) {
+                examTimerBadge.classList.remove('warning-orange');
+                examTimerBadge.classList.add('warning-red');
+            }
+            updateExamTimerUI();
+            showStudentToast(
+                '⏱️ 2 Dakika Uzatma Başladı!',
+                'Son 2 dakikalık uzatma süreniz başladı. Lütfen eksik kalan yanıtlarınızı doldurup sınavı gönderiniz.'
+            );
+            examTimerInterval = setInterval(tickExamTimer, 1000);
+        });
+    }
+
+    // 🧪 ÖĞRETMEN HIZLI ZAMAN İLERİ SARMA KONTROLLERİ (TEST MODU)
+    const btnFastForward15Min = document.getElementById('btnFastForward15Min');
+    const btnFastForward5Min = document.getElementById('btnFastForward5Min');
+    const btnFastForwardExpire = document.getElementById('btnFastForwardExpire');
+
+    if (btnFastForward15Min) {
+        btnFastForward15Min.addEventListener('click', () => {
+            if (!isExtensionActive) {
+                examTimeRemaining = 15 * 60 + 1; // 15:01 -> 15:00
+                updateExamTimerUI();
+                showStudentToast('⏩ Zaman İleri Sarıldı', 'Süre son 15 dakikaya (15:00) sarıldı. 15 dk uyarısı tetikleniyor.');
+            }
+        });
+    }
+
+    if (btnFastForward5Min) {
+        btnFastForward5Min.addEventListener('click', () => {
+            if (!isExtensionActive) {
+                examTimeRemaining = 5 * 60 + 1; // 05:01 -> 05:00
+                updateExamTimerUI();
+                showStudentToast('⏩ Zaman İleri Sarıldı', 'Süre son 5 dakikaya (05:00) sarıldı. 5 dk uyarısı ve kırmızı sayaç tetikleniyor.');
+            }
+        });
+    }
+
+    if (btnFastForwardExpire) {
+        btnFastForwardExpire.addEventListener('click', () => {
+            examTimeRemaining = 1; // 00:01 -> 00:00
+            updateExamTimerUI();
+            showStudentToast('⏩ Süre Sıfırlandı', 'Süre sıfırlandı. Süre doldu modalı / otomatik gönderme testi başlatılıyor.');
+        });
+    }
+
+    function finishAndSubmitExam(isAutoSubmit = false) {
+        if (examTimerInterval) clearInterval(examTimerInterval);
+        saveCurrentQuestionState();
+        sendExamDataToGoogleSheet();
+        showExamSuccessModal(isAutoSubmit);
+        showStudentToast('✓ Sınav Gönderildi!', 'Tüm yanıtlarınız başarıyla öğretmeninize ulaştırıldı.');
+    }
+
+    function showExamSuccessModal(isAutoSubmit = false) {
+        const modal = document.getElementById('modalExamSuccess');
+        if (modal) {
+            modal.style.display = 'flex';
+            const titleEl = modal.querySelector('h2');
+            if (titleEl && isAutoSubmit) {
+                titleEl.textContent = '⌛ Süre Doldu! Sınavınız Gönderildi 🎉';
+            }
+        } else {
+            alert(isAutoSubmit ? '⌛ Sınav süreniz doldu ve cevaplarınız öğretmeninize gönderildi!' : '🎉 Tebrikler! Sınavınız başarıyla tamamlandı ve öğretmeninize gönderildi.');
+        }
+    }
+
     function initExam() {
         isDrawerOpen = false;
         if (blocksDrawer) blocksDrawer.classList.remove('open');
@@ -563,6 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupDragAndDropEvents();
         setupCustomBlockModalEvents();
         setupBlocksDrawerEvents();
+        startExamTimer();
     }
 
     // 3. CATEGORY & DRAWER RENDERING
@@ -1102,7 +1277,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 5. CUSTOM BLOCK MODAL LOGIC ("Blok Oluştur")
+    let isCustomBlockModalEventsSetup = false;
     function setupCustomBlockModalEvents() {
+        if (isCustomBlockModalEventsSetup) return;
+        isCustomBlockModalEventsSetup = true;
+        
         btnCloseCustomBlockModal.addEventListener('click', closeCustomBlockModal);
         btnCancelCustomBlock.addEventListener('click', closeCustomBlockModal);
 
@@ -1302,7 +1481,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 6. DRAG & DROP LOGIC FOR WORKSPACE CANVAS & DELETION ZONES
+    let isDragAndDropSetup = false;
     function setupDragAndDropEvents() {
+        if (isDragAndDropSetup) return;
+        isDragAndDropSetup = true;
+
         // Main stack drop handling
         if (mainBlockStack) {
             mainBlockStack.addEventListener('dragover', (e) => {
@@ -1511,6 +1694,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (q.type === 'pyramid') {
+            // Pyramid answers are already live-synced in studentAnswers[q.id]
+            return;
+        }
+
         const allStacks = blockDropList.querySelectorAll('.block-stack');
         const stacksDataList = [];
         allStacks.forEach(stackEl => {
@@ -1663,10 +1851,10 @@ document.addEventListener('DOMContentLoaded', () => {
             btnToggleBanner.style.display = 'inline-flex';
         }
         if (btnStartCodingNow) {
-            btnStartCodingNow.style.display = q.type === 'paper_input' ? 'none' : 'inline-flex';
+            btnStartCodingNow.style.display = (q.type === 'paper_input' || q.type === 'pyramid') ? 'none' : 'inline-flex';
         }
 
-        // 2. VIEW MODE TOGGLING (PAPER INPUT vs BLOCKS)
+        // 2. VIEW MODE TOGGLING (PAPER INPUT vs PYRAMID vs BLOCKS)
         if (q.type === 'paper_input') {
             if (categorySidebar) categorySidebar.style.display = 'none';
             if (blocksDrawer) {
@@ -1676,14 +1864,41 @@ document.addEventListener('DOMContentLoaded', () => {
             isDrawerOpen = false;
             if (blockDropList) blockDropList.style.display = 'none';
             if (paperAnswerContainer) paperAnswerContainer.style.display = 'flex';
+            if (pyramidAnswerContainer) pyramidAnswerContainer.style.display = 'none';
             if (hardwarePortMap) hardwarePortMap.style.display = 'none';
             if (btnClearCanvas) btnClearCanvas.style.display = 'none';
             if (trashZone) trashZone.style.display = 'none';
 
-            if (inputPaperAnswer) {
-                inputPaperAnswer.value = studentAnswers[q.id] || '';
-                setTimeout(() => inputPaperAnswer.focus(), 150);
+            const defaultGroup = document.getElementById('defaultPaperInputGroup');
+            const targetGroup = document.getElementById('targetBoardInputsGroup');
+
+            if (q.id === 'q5') {
+                if (defaultGroup) defaultGroup.style.display = 'none';
+                if (targetGroup) targetGroup.style.display = 'block';
+                loadTargetBoardInputs(q.id);
+            } else {
+                if (defaultGroup) defaultGroup.style.display = 'block';
+                if (targetGroup) targetGroup.style.display = 'none';
+                if (inputPaperAnswer) {
+                    inputPaperAnswer.value = studentAnswers[q.id] || '';
+                    setTimeout(() => inputPaperAnswer.focus(), 150);
+                }
             }
+        } else if (q.type === 'pyramid') {
+            if (categorySidebar) categorySidebar.style.display = 'none';
+            if (blocksDrawer) {
+                blocksDrawer.style.display = 'none';
+                blocksDrawer.classList.remove('open');
+            }
+            isDrawerOpen = false;
+            if (blockDropList) blockDropList.style.display = 'none';
+            if (paperAnswerContainer) paperAnswerContainer.style.display = 'none';
+            if (pyramidAnswerContainer) pyramidAnswerContainer.style.display = 'flex';
+            if (hardwarePortMap) hardwarePortMap.style.display = 'none';
+            if (btnClearCanvas) btnClearCanvas.style.display = 'none';
+            if (trashZone) trashZone.style.display = 'none';
+
+            renderPyramidBoard(q.id);
         } else {
             if (categorySidebar) categorySidebar.style.display = 'flex';
             if (blocksDrawer) {
@@ -1694,6 +1909,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderCategories();
             if (blockDropList) blockDropList.style.display = 'flex';
             if (paperAnswerContainer) paperAnswerContainer.style.display = 'none';
+            if (pyramidAnswerContainer) pyramidAnswerContainer.style.display = 'none';
             if (hardwarePortMap) hardwarePortMap.style.display = 'flex';
             if (btnClearCanvas) btnClearCanvas.style.display = 'inline-flex';
             if (trashZone) trashZone.style.display = 'block';
@@ -1731,6 +1947,50 @@ document.addEventListener('DOMContentLoaded', () => {
             btnFinishExam.style.display = 'none';
         }
     }
+
+    function loadTargetBoardInputs(qId) {
+        const inp13 = document.getElementById('targetInput13');
+        const inp21 = document.getElementById('targetInput21');
+        const inp28 = document.getElementById('targetInput28');
+        const inp32 = document.getElementById('targetInput32');
+        const saved = studentAnswers[qId] || '';
+
+        let n13 = '', n21 = '', n28 = '', n32 = '';
+        if (saved) {
+            const m13 = saved.match(/13x(\d+)/i); if (m13) n13 = m13[1];
+            const m21 = saved.match(/21x(\d+)/i); if (m21) n21 = m21[1];
+            const m28 = saved.match(/28x(\d+)/i); if (m28) n28 = m28[1];
+            const m32 = saved.match(/32x(\d+)/i); if (m32) n32 = m32[1];
+        }
+
+        if (inp13) inp13.value = n13;
+        if (inp21) inp21.value = n21;
+        if (inp28) inp28.value = n28;
+        if (inp32) inp32.value = n32;
+    }
+
+    function saveTargetBoardAnswer() {
+        const q = questions[currentQuestionIndex];
+        if (!q || q.id !== 'q5') return;
+        const inp13 = document.getElementById('targetInput13');
+        const inp21 = document.getElementById('targetInput21');
+        const inp28 = document.getElementById('targetInput28');
+        const inp32 = document.getElementById('targetInput32');
+
+        const v13 = parseInt(inp13?.value) || 0;
+        const v21 = parseInt(inp21?.value) || 0;
+        const v28 = parseInt(inp28?.value) || 0;
+        const v32 = parseInt(inp32?.value) || 0;
+
+        studentAnswers['q5'] = `13x${v13} + 21x${v21} + 28x${v28} + 32x${v32} = 100`;
+    }
+
+    ['targetInput13', 'targetInput21', 'targetInput28', 'targetInput32'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', saveTargetBoardAnswer);
+        }
+    });
 
     function clearCanvasUI() {
         // Remove secondary stacks
@@ -1854,9 +2114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnFinishExam.addEventListener('click', () => {
         saveCurrentQuestionState();
         if (confirm('Sınavınızı tamamlayıp tüm cevaplarınızı öğretmeninize göndermek istediğinize emin misiniz?')) {
-            sendExamDataToGoogleSheet();
-            showExamSuccessModal();
-            showStudentToast('✓ Sınavınız Gönderildi! 🎉', 'Tüm yanıtlarınız başarıyla öğretmeninize ulaştırıldı.');
+            finishAndSubmitExam(false);
         }
     });
 
@@ -1967,6 +2225,225 @@ document.addEventListener('DOMContentLoaded', () => {
         return lines.join('\n');
     }
 
+    // ==========================================================
+    // SİHİRLİ PİRAMİT (MANTIK 1 - 3. SORU) İNTERAKTİF MOTORU
+    // ==========================================================
+    function renderPyramidBoard(questionId) {
+        if (!pyramidRowsContainer) return;
+
+        pyramidRowsContainer.innerHTML = '';
+        if (pyramidSvgLines) pyramidSvgLines.innerHTML = '';
+
+        const storedData = studentAnswers[questionId] || { selections: {}, path: [], text: '', isCorrect: false };
+        const selectedCols = storedData.selections || {};
+
+        MAGIC_PYRAMID_GRID.forEach((rowVals, rIdx) => {
+            const rowEl = document.createElement('div');
+            rowEl.className = 'pyramid-row';
+            rowEl.dataset.row = rIdx;
+
+            rowVals.forEach((val, cIdx) => {
+                const nodeBtn = document.createElement('button');
+                nodeBtn.type = 'button';
+                nodeBtn.className = 'pyramid-node';
+                nodeBtn.textContent = val;
+                nodeBtn.dataset.row = rIdx;
+                nodeBtn.dataset.col = cIdx;
+                nodeBtn.dataset.val = val;
+                nodeBtn.title = `${rIdx + 1}. Satır, ${cIdx + 1}. Daire (Sayı: ${val})`;
+
+                if (selectedCols[rIdx] === cIdx) {
+                    nodeBtn.classList.add('selected');
+                }
+
+                nodeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    handlePyramidNodeClick(questionId, rIdx, cIdx, val);
+                });
+
+                rowEl.appendChild(nodeBtn);
+            });
+
+            pyramidRowsContainer.appendChild(rowEl);
+        });
+
+        if (btnClearPyramid) {
+            btnClearPyramid.onclick = () => {
+                studentAnswers[questionId] = { selections: {}, path: [], text: '(Henüz bir yol seçilmedi)', isCorrect: false };
+                renderPyramidBoard(questionId);
+            };
+        }
+
+        // Draw connections, numbers tracker and path text
+        setTimeout(() => {
+            updatePyramidStatusAndConnections(questionId);
+        }, 50);
+    }
+
+    function handlePyramidNodeClick(questionId, row, col, val) {
+        let stored = studentAnswers[questionId];
+        if (!stored || typeof stored !== 'object' || !stored.selections) {
+            stored = { selections: {}, path: [], text: '', isCorrect: false };
+        }
+        const selectedCols = { ...stored.selections };
+
+        // Toggle or change selection in this row
+        if (selectedCols[row] === col) {
+            delete selectedCols[row];
+        } else {
+            selectedCols[row] = col;
+        }
+
+        // Compute ordered path & used values
+        const pathVals = [];
+        for (let r = 0; r < MAGIC_PYRAMID_GRID.length; r++) {
+            if (selectedCols[r] !== undefined) {
+                pathVals.push(MAGIC_PYRAMID_GRID[r][selectedCols[r]]);
+            }
+        }
+
+        // Expected unique solution:
+        // [0, 0, 0, 0, 0, 1, 1, 2, 3, 3] -> 6, 7, 1, 4, 2, 5, 3, 10, 8, 9
+        const expectedCols = [0, 0, 0, 0, 0, 1, 1, 2, 3, 3];
+        const isComplete = Object.keys(selectedCols).length === 10;
+        let isCorrect = isComplete;
+        if (isComplete) {
+            for (let r = 0; r < 10; r++) {
+                if (selectedCols[r] !== expectedCols[r]) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+        }
+
+        const pathText = pathVals.length > 0 ? pathVals.join(' ➔ ') : '(Henüz bir yol seçilmedi)';
+
+        // Update answer
+        studentAnswers[questionId] = {
+            selections: selectedCols,
+            path: pathVals,
+            text: pathText,
+            isCorrect: isCorrect
+        };
+
+        // Update active row nodes UI
+        const rowEl = pyramidRowsContainer.querySelector(`.pyramid-row[data-row="${row}"]`);
+        if (rowEl) {
+            rowEl.querySelectorAll('.pyramid-node').forEach(btn => {
+                const c = parseInt(btn.dataset.col, 10);
+                if (selectedCols[row] === c) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+        }
+
+        // Show auto-save indicator
+        if (pyramidSaveStatus) {
+            pyramidSaveStatus.style.display = 'inline-block';
+            clearTimeout(pyramidSaveTimer);
+            pyramidSaveTimer = setTimeout(() => {
+                if (pyramidSaveStatus) pyramidSaveStatus.style.display = 'none';
+            }, 1800);
+        }
+
+        updatePyramidStatusAndConnections(questionId);
+    }
+
+    function updatePyramidStatusAndConnections(questionId) {
+        const stored = studentAnswers[questionId] || { selections: {}, path: [], text: '' };
+        const selectedCols = stored.selections || {};
+        const pathVals = stored.path || [];
+
+        // 1. Update Path Text
+        if (pyramidPathText) {
+            pyramidPathText.textContent = pathVals.length > 0 ? pathVals.join(' ➔ ') : '(Dairelere tıklayarak rotanızı belirleyiniz)';
+        }
+
+        // 2. Update Number Badges (1 to 10)
+        if (pyramidNumberBadges) {
+            pyramidNumberBadges.innerHTML = '';
+            const freq = {};
+            for (let n = 1; n <= 10; n++) freq[n] = 0;
+            pathVals.forEach(v => {
+                if (freq[v] !== undefined) freq[v]++;
+            });
+
+            for (let n = 1; n <= 10; n++) {
+                const badge = document.createElement('span');
+                badge.className = 'num-badge';
+                badge.textContent = n;
+                if (freq[n] === 1) {
+                    badge.classList.add('used');
+                    badge.title = `${n} sayısı rotada 1 kez kullanıldı.`;
+                } else if (freq[n] > 1) {
+                    badge.classList.add('duplicate');
+                    badge.title = `⚠️ ${n} sayısı ${freq[n]} kez kullanıldı!`;
+                } else {
+                    badge.title = `${n} henüz rotada yok.`;
+                }
+                pyramidNumberBadges.appendChild(badge);
+            }
+        }
+
+        // 3. Draw SVG Connection Lines
+        drawPyramidLines(selectedCols);
+    }
+
+    function drawPyramidLines(selectedCols) {
+        if (!pyramidSvgLines || !pyramidRowsContainer) return;
+        const boardEl = document.getElementById('pyramidBoard');
+        if (!boardEl) return;
+
+        const boardRect = boardEl.getBoundingClientRect();
+        pyramidSvgLines.setAttribute('width', boardRect.width);
+        pyramidSvgLines.setAttribute('height', boardRect.height);
+        pyramidSvgLines.setAttribute('viewBox', `0 0 ${boardRect.width} ${boardRect.height}`);
+        pyramidSvgLines.innerHTML = '';
+
+        for (let r = 0; r < MAGIC_PYRAMID_GRID.length - 1; r++) {
+            if (selectedCols[r] !== undefined && selectedCols[r + 1] !== undefined) {
+                const node1 = pyramidRowsContainer.querySelector(`.pyramid-node[data-row="${r}"][data-col="${selectedCols[r]}"]`);
+                const node2 = pyramidRowsContainer.querySelector(`.pyramid-node[data-row="${r + 1}"][data-col="${selectedCols[r + 1]}"]`);
+
+                if (node1 && node2) {
+                    const r1 = node1.getBoundingClientRect();
+                    const r2 = node2.getBoundingClientRect();
+
+                    const x1 = (r1.left + r1.right) / 2 - boardRect.left;
+                    const y1 = (r1.top + r1.bottom) / 2 - boardRect.top;
+                    const x2 = (r2.left + r2.right) / 2 - boardRect.left;
+                    const y2 = (r2.top + r2.bottom) / 2 - boardRect.top;
+
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', x1);
+                    line.setAttribute('y1', y1);
+                    line.setAttribute('x2', x2);
+                    line.setAttribute('y2', y2);
+                    line.setAttribute('stroke', '#ef4444');
+                    line.setAttribute('stroke-width', '3.5');
+                    line.setAttribute('stroke-linecap', 'round');
+
+                    const colDiff = selectedCols[r + 1] - selectedCols[r];
+                    if (colDiff !== 0 && colDiff !== 1) {
+                        line.setAttribute('stroke-dasharray', '4,4');
+                        line.setAttribute('stroke', '#f87171');
+                    }
+
+                    pyramidSvgLines.appendChild(line);
+                }
+            }
+        }
+    }
+
+    window.addEventListener('resize', () => {
+        const q = questions[currentQuestionIndex];
+        if (q && q.type === 'pyramid') {
+            updatePyramidStatusAndConnections(q.id);
+        }
+    });
+
     // AUTOMATED GOOGLE SHEETS WEBHOOK SUBMISSION
     function sendExamDataToGoogleSheet() {
         const webhookUrl = getGoogleSheetWebhookUrl();
@@ -1977,7 +2454,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const q1CodeText = formatBlocksToCleanText(studentAnswers['q1'] || []);
         const q2CodeText = formatBlocksToCleanText(studentAnswers['q2'] || []);
-        const q3Text = studentAnswers['q3'] || '(Yanıt verilmedi)';
+        let q3Text = '(Yanıt verilmedi)';
+        let q3Correct = false;
+        if (studentAnswers['q3']) {
+            if (typeof studentAnswers['q3'] === 'string') {
+                q3Text = studentAnswers['q3'];
+            } else if (studentAnswers['q3'].text) {
+                q3Text = studentAnswers['q3'].text;
+                q3Correct = !!studentAnswers['q3'].isCorrect;
+            }
+        }
         const q4Text = studentAnswers['q4'] || '(Yanıt verilmedi)';
         const q5Text = studentAnswers['q5'] || '(Yanıt verilmedi)';
         const q6Text = studentAnswers['q6'] || '(Yanıt verilmedi)';
@@ -1993,6 +2479,7 @@ document.addEventListener('DOMContentLoaded', () => {
             q1Answer: q1CodeText,
             q2Answer: q2CodeText,
             q3Answer: q3Text,
+            q3Correct: q3Correct,
             q4Answer: q4Text,
             q5Answer: q5Text,
             q6Answer: q6Text,
@@ -2002,6 +2489,7 @@ document.addEventListener('DOMContentLoaded', () => {
             q8SimAttemptsUsed: simAttemptsUsed['q8'] || 0,
             q1Json: JSON.stringify(studentAnswers['q1'] || []),
             q2Json: JSON.stringify(studentAnswers['q2'] || []),
+            q3Json: JSON.stringify(studentAnswers['q3'] || {}),
             q7Json: JSON.stringify(studentAnswers['q7'] || []),
             q8Json: JSON.stringify(studentAnswers['q8'] || [])
         };
@@ -2057,17 +2545,18 @@ document.addEventListener('DOMContentLoaded', () => {
             drawer: 'simDrawer',
             badgeMission: 'simMissionBadge',
             pillColor: 'simPillColor',
+            txtDistance: 'simTxtDistance',
             txtHeading: 'simTxtHeading',
             txtMotors: 'simTxtMotors',
             btnSubmitCode: 'btnSimSubmitCode',
             trackSelector: 'simTrackSelect'
         });
 
-        // Guard: simulator can only be opened on Question 5 and 6 (simulator questions)
+        // Guard: simulator can only be opened on Question 7 and 8 (simulator questions)
         window.onSimulatorCanToggle = () => {
             const q = questions[currentQuestionIndex];
             if (q && q.type !== 'simulator') {
-                alert('Robotik Simülatör pisti sadece 5. ve 6. sorularda (Simülasyon etabı) açılacaktır! Lütfen önce bu soruyu tamamlayınız.');
+                alert('Robotik Simülatör pisti sadece 7. ve 8. sorularda (Simülasyon etabı) açılacaktır! Lütfen önce bu soruyu tamamlayınız.');
                 return false;
             }
             return true;

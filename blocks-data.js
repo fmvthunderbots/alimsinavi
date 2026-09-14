@@ -701,50 +701,64 @@ const INITIAL_BLOCKS = [
     }
 ];
 
+// SİHİRLİ PİRAMİT VERİLERİ (10 BASAMAKLI MATRİS)
+const MAGIC_PYRAMID_GRID = [
+    [6],
+    [7, 10],
+    [1, 3, 8],
+    [4, 7, 5, 9],
+    [2, 6, 3, 2, 3],
+    [6, 5, 7, 10, 5, 6],
+    [3, 3, 9, 3, 6, 1, 2],
+    [9, 10, 10, 2, 5, 4, 3, 8],
+    [2, 7, 2, 8, 10, 6, 10, 1, 10],
+    [1, 8, 10, 9, 7, 2, 9, 8, 9, 6]
+];
+
 // SINAV SORULARI (2 KODLAMA + 4 MANTIK/MUHAKEME + 2 SİMÜLATÖR GÖREVİ = 8 SORU)
 const DEFAULT_QUESTIONS = [
     {
         id: 'q1',
         type: 'blocks',
         title: '1. Soru: Eşkenar Üçgen Rotası (Algoritma & Geometri)',
-        description: 'Robotunuzun sahada bir eşkenar üçgen çizerek başlangıç noktasına geri dönmesi istenmektedir.\n\nKurallar:\n• Üçgenin her bir kenar uzunluğu tam olarak 40 cm olmalıdır.\n• Robotun gereksiz kod tekrarı yapmaması için döngü (Tekrarla) bloklarını kullanmanız beklenmektedir.\n• (İpucu: Bir eşkenar üçgenin iç açısı 60 derecedir, ancak robotun dönüş yapması gereken dış açı farklıdır!)\n\nGereken kod bloklarını oluşturunuz.'
+        description: 'Robotunuzun sahada her bir kenar uzunluğu tam olarak 40 cm olan bir eşkenar üçgen çizerek başlangıç noktasına geri dönmesini sağlayan kodu yazınız.'
     },
     {
         id: 'q2',
         type: 'blocks',
         title: '2. Soru: Akıllı Otopark Asistanı (Sensör & Şartlar)',
-        description: 'Robotunuz düz bir yolda yavaşça ilerlerken mesafe sensörü ile sağ tarafındaki park boşluklarını taramaktadır.\n\nKurallar:\n• Robot, okunan mesafe 15 cm\'den BÜYÜK olana kadar ilerlemeye devam etmelidir.\n• Mesafe 15 cm\'den büyük olduğunda (boşluk bulduğunda):\n  1. Hareketi durdurmalı,\n  2. 90 derece sağa dönmeli,\n  3. 15 cm geriye giderek park etmeli,\n  4. Sensördeki (veya motordaki) herhangi bir değeri sıfırlayarak işlemi bitirmelidir.\n\nGereken algoritmayı yazınız.'
+        description: 'Robotunuz düz bir yolda ilerlerken mesafe sensörü ile sağ tarafındaki park boşluklarını taramaktadır.\n\nKurallar:\n• Robot, okunan mesafe 15 cm\'den büyük olana kadar ilerlemeye devam etmelidir.\n• Mesafe 15 cm\'den büyük olduğunda:\n  1. Hareketi durdurmalı,\n  2. 90 derece sağa dönmeli,\n  3. 15 cm geriye giderek park etmeli,\n  4. Sapma açısını sıfırlayarak kodu bitirmelidir.'
     },
     {
         id: 'q3',
-        type: 'paper_input',
-        title: '3. Soru: Robotik Şifre Algoritması',
-        description: 'Bir robot, girilen 4 basamaklı ABCD sayısından şu kurala göre bir güvenlik kodu üretmektedir:\n• İlk iki basamağın çarpımını hesaplar: (A × B)\n• Son iki basamağın çarpımını hesaplar: (C × D)\n• Elde ettiği sonuçları yan yana birleştirir.\n\nÖrnekler:\nGirdi: 4325 ➔ (4×3=12) ve (2×5=10) ➔ Çıktı: 1210\nGirdi: 7253 ➔ (7×2=14) ve (5×3=15) ➔ Çıktı: 1415\n\nSORU: Robotun ürettiği güvenlik kodu 1832 olduğuna ve girilen 4 basamaklı sayının tüm rakamları birbirinden farklı olduğuna göre; girilebilecek EN BÜYÜK 4 basamaklı sayı kaçtır?'
+        type: 'pyramid',
+        title: '3. Soru: Sihirli Piramit (Mantık & Muhakeme)',
+        description: 'Yukarıdaki çözümlü sihirli piramit örneğini inceleyiniz. Ardından aşağıdaki 10 basamaklı interaktif sihirli piramitte dairelerin üzerine tıklayarak tepeden tabana doğru 1\'den 10\'a kadar her sayının tam birer kez kullanıldığı doğru rotayı oluşturunuz.'
     },
     {
         id: 'q4',
         type: 'paper_input',
-        title: '4. Soru: Akıllı Sepet Dağıtım Algoritması (Durum Mantığı)',
-        description: 'Bir fabrika robotu konveyör banttan geçen renkli paketleri 3 farklı sepete (A, B ve C) şu kurallara göre dağıtmaktadır:\n• 1. Kural: Eğer paket KIRMIZI ise doğrudan A sepetine atılır.\n• 2. Kural: Eğer paket MAVİ ise; A sepetindeki paket sayısı B sepetinden FAZLA ise B sepetine, değilse C sepetine atılır.\n• 3. Kural: Eğer paket YEŞİL ise en az paketin olduğu sepete atılır. (Eşitlik durumunda öncelik sırası A > B > C şeklindedir).\n\nBanttan sırasıyla şu 8 paket geçmektedir:\n1.Kırmızı ➔ 2.Mavi ➔ 3.Yeşil ➔ 4.Mavi ➔ 5.Kırmızı ➔ 6.Yeşil ➔ 7.Mavi ➔ 8.Yeşil\n\nSORU: Tüm paketler dağıtıldıktan sonra A, B ve C sepetlerinde sırasıyla kaçar paket birikir? (Yazım Formatı Örneği: A:5, B:1, C:2)'
+        title: '4. Soru: Atletler Yarış Mantığı (Derece & Yalan Algoritması)',
+        description: 'A, B, C, D, E adlı beş atlet yarış sonrasında konuşmaktadırlar:\n\n• A: "E, D\'ye göre daha öndedir."\n• B: "B birincidir."\n• C: "Ben sonuncu değilim."\n• D: "A, dördüncüdür."\n• E: "D son iki atletten biridir."\n\nYarışı ikinci (2.) ve üçüncü (3.) bitiren atletler YALAN, diğer atletler DOĞRU söylemektedir.\n\nSORU: Her bir atletin yarışta kaçıncı olduğunu bulunuz? (Yazım Formatı Örneği: A:1, B:2, C:3, D:4, E:5)'
     },
     {
         id: 'q5',
         type: 'paper_input',
-        title: '5. Soru: Dişli Çarklar ve Tur Sayısı Algoritması',
-        description: 'Bir robotik mekanizmada yan yana birbirine bağlı A, B ve C dişli çarkları bulunmaktadır:\n• A çarkının 24 dişi,\n• B çarkının 16 dişi,\n• C çarkının 36 dişi vardır.\n\nA çarkı saat yönünde dönmeye başladığında birbirine temas eden tüm dişliler dönmektedir.\n\nSORU: A çarkı saat yönünde 15 tam tur döndüğünde C çarkı kaç tam tur dönmüş olur?'
+        title: '5. Soru: Hedef Tahtası Mantık Algoritması',
+        description: 'Üzerinde 13, 21, 28 ve 32 puanlık 4 farklı bölge bulunan bir hedef tahtasına ok atışları yapılacaktır.\n\nEn az sayıda ok atarak TAM 100 PUAN toplamak için hangi alanlara kaçar ok atmak gerekir?\n\nSORU: Her bir bölgeye atılması gereken ok sayılarını aşağıdaki kutucuklara giriniz.'
     },
     {
         id: 'q6',
         type: 'paper_input',
-        title: '6. Soru: Akıllı Şifre Çözme Algoritması',
-        description: 'Bir güvenlik robotu kapıyı açmak için 1, 2, 3, 4 ve 5 rakamlarından oluşan 5 basamaklı bir şifreyi çözmelidir.\n\nRobotun sisteminde tanımlı olan kısıtlamalar şöyledir:\n\n• 1, 2, 3, 4 ve 5 rakamlarının her biri bir kez kullanılmaktadır.\n• Oluşan 5 basamaklı şifre çift bir sayıdır.\n• İlk iki basamağın toplamı, son iki basamağın toplamına eşittir.\n• 3 ve 5 rakamları yan yanadır ve 3 rakamı 5\'in hemen solundadır.\n\nSORU: Bu şartları sağlayan 5 basamaklı şifre kaçtır?'
+        title: '6. Soru: Kutu Silme Mantık Algoritması',
+        description: 'Aşağıdaki matematiksel eşitlikte kutulardan İKİSİNİ silerek eşitliği doğru hale getiriniz.<br><br><img src="https://i.imgur.com/obCH5j1.jpeg" alt="Kutu Silme Soru Görseli" style="max-width: 100%; border-radius: 8px; margin: 10px 0;"><br><br>💡 <b>Not:</b> Silinecek kutular <b>sayı</b> olabileceği gibi <b>işlem sembolleri (+, -, ×)</b> de olabilir. İşlemlerde çarpma ve bölme, toplama ve çıkarmaya göre önceliklidir.<br><br><b>SORU:</b> Silinmesi gereken iki kutudaki ifadeleri yazınız.'
     },
     {
         id: 'q7',
         type: 'simulator',
         trackId: 'q7',
-        title: '7. Soru: 1. Simülatör Görevi - Rota Takibi ve Bitiş Alanı',
-        description: '👉 <b>ÖNEMLİ:</b> Sağ üstteki <b>"🤖 Simülatör"</b> butonuna (veya aşağıdaki butona) basarak robot test pistinizi açınız!<br><br><b>GÖREV TANIMI:</b><br>Robotunuz yeşil <b>BAŞLANGIÇ</b> noktasından yola çıkıp beyaz zemin üzerindeki siyah yolu takip ederek sarı damalı <b>HEDEF 🏁</b> alanına başarıyla ulaşmalıdır.<br>• İlgili hareket bloklarını diziniz.<br>• Simülatördeki <b>"▶ Kodu Simüle Et"</b> butonuna basarak görevi tamamlayınız.'
+        title: '7. Soru: 1. Simülatör Görevi - Rota Takibi ve Engeli Aşma (Baypas)',
+        description: '👉 <b>ÖNEMLİ:</b> Sağ üstteki <b>"🤖 Simülatör"</b> butonuna (veya aşağıdaki butona) basarak robot test pistinizi açınız!<br><br><b>PİST ÖLÇEĞİ:</b><br>Kareli zemin üzerindeki <b>her 1 kare = tam 1 cm</b> uzunluğundadır. Kod bloklarına girdiğiniz cm değerleri karelerle birebir örtüşmektedir.<br><br><b>GÖREV TANIMI VE KURALLAR:</b><br>• Robotunuz yeşil <b>BAŞLANGIÇ</b> alanından kuzeye (yukarı) doğru yola çıkacaktır.<br>• Düz rotanın üzerinde yolu tamamen kapatan bir <b>⛔ ENGEL</b> bulunmaktadır.<br>• Robotunuz bu engele çarpmamalıdır! 7 cm ilerideki yol ayrımından (kavşaktan) sağa saparak <b>açık baypas rotasını</b> takip etmeli ve sarı <b>HEDEF 🏁</b> alanına başarıyla ulaşmalıdır.<br>• İlgili hareket bloklarını (motor ataması, cm cinsinden sürüş ve sağa/sola dönüş blokları) çalışma alanına ekleyiniz.<br>• <b>"▶ Kodu Simüle Et"</b> butonuna basarak görevinizi tamamlayıp kaydediniz.'
     },
     {
         id: 'q8',

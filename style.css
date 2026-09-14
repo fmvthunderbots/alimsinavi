@@ -378,6 +378,17 @@ body {
     display: none !important;
 }
 
+/* ÖĞRENCİ EKRANINDAN İPUCU GİZLEME (SEÇİLEN ROTA & KULLANILAN SAYILAR) */
+.selected-route-info,
+.used-numbers-info,
+.route-hint-box,
+.pyramid-route-summary,
+.pyramid-status-row,
+div[class*="selected-route"],
+div[class*="used-numbers"] {
+    display: none !important;
+}
+
 .question-banner.collapsed .question-meta {
     margin-bottom: 0;
 }
@@ -783,7 +794,7 @@ body {
     font-size: 0.82rem;
     font-weight: 600;
     transition: all 0.2s ease;
-    z-index: 2;
+    z-index: 10;
 }
 
 .trash-zone.drag-over {
@@ -792,7 +803,143 @@ body {
     transform: scale(1.05);
 }
 
-/* --- LEGO SPIKE PRIME BLOK TASARIMLARI --- */
+/* NASIL KODLAMA YAPILIR? BİLGİ KARTI VE ÇAKIŞMA ENGELLEYİCİ */
+.empty-drop-placeholder {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background-color: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: var(--radius-lg);
+    padding: 14px 18px;
+    max-width: 520px;
+    margin-right: 180px;
+    font-size: 0.84rem;
+    color: #475569;
+}
+
+.empty-drop-placeholder .arrow {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.empty-drop-placeholder strong {
+    color: #0284c7;
+    font-size: 0.9rem;
+}
+
+/* EXAM TIMER BADGE IN HEADER */
+.exam-timer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #f1f5f9;
+    border: 1.5px solid #cbd5e1;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #334155;
+    transition: all 0.3s ease;
+}
+
+/* ÖĞRETMEN HIZLI ZAMAN KONTROLLERİ */
+.teacher-timer-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 6px;
+}
+.btn-fast-forward {
+    background-color: #3b82f6;
+    color: #ffffff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-fast-forward:hover {
+    background-color: #2563eb;
+    transform: translateY(-1px);
+}
+.btn-fast-forward.btn-danger-ff {
+    background-color: #ef4444;
+}
+.btn-fast-forward.btn-danger-ff:hover {
+    background-color: #dc2626;
+}
+
+.exam-timer-badge.warning-orange {
+    background-color: #fff7ed;
+    border-color: #fdba74;
+    color: #c2410c;
+}
+
+.exam-timer-badge.warning-red {
+    background-color: #fef2f2;
+    border-color: #fca5a5;
+    color: #dc2626;
+    animation: pulseTimer 1s infinite alternate;
+}
+
+@keyframes pulseTimer {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+}
+
+.timer-time {
+    font-family: 'Outfit', monospace;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+}
+
+/* TIMER MODAL STYLES */
+.modal-timer-card {
+    max-width: 480px;
+    text-align: center;
+    padding: 28px 24px;
+}
+
+.modal-timer-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.timer-modal-icon {
+    font-size: 3rem;
+}
+
+.modal-timer-desc {
+    font-size: 0.95rem;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.modal-timer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-large {
+    padding: 12px 18px;
+    font-size: 1rem;
+    width: 100%;
+}
+.btn-warning {
+    background-color: #f59e0b;
+    color: #ffffff;
+}
+.btn-warning:hover {
+    background-color: #d97706;
+}
 .block-stack {
     position: relative;
     z-index: 3;
@@ -1677,11 +1824,12 @@ input[type="text"].block-input-pill {
 
 .sim-canvas-overlay-badge {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 0.75rem;
+    top: 10px;
+    right: 12px;
+    z-index: 5;
+    font-size: 0.72rem;
     font-weight: 800;
-    padding: 4px 12px;
+    padding: 3px 10px;
     border-radius: var(--radius-full);
     letter-spacing: 0.4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
@@ -2357,3 +2505,314 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
 
 .reporter-drop-zone:has(.instance-block) input { display: none !important; }
 .reporter-drop-zone:has(.instance-block) select { display: none !important; }
+
+/* ==========================================================
+   SİHİRLİ PİRAMİT (MANTIK 1) STİLLERİ
+   ========================================================== */
+.pyramid-answer-container {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+    overflow-y: auto;
+    z-index: 5;
+    position: relative;
+    width: 100%;
+}
+
+.pyramid-card {
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px 28px;
+    max-width: 840px;
+    width: 100%;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06), 0 8px 10px -6px rgba(0,0,0,0.04);
+}
+
+.pyramid-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.pyramid-badge {
+    background: #fdf2f8;
+    color: #db2777;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    letter-spacing: 0.4px;
+}
+
+.pyramid-card-header h3 {
+    font-family: var(--font-display, sans-serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+/* Çözümlü Örnek ve Rehber Kutusu */
+.pyramid-guide-box {
+    display: flex;
+    gap: 20px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.pyramid-guide-img-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.pyramid-example-img {
+    width: 135px;
+    height: auto;
+    border-radius: 8px;
+    border: 1.5px solid #cbd5e1;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    background: #ffffff;
+}
+
+.pyramid-guide-caption {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    text-align: center;
+}
+
+.pyramid-guide-rules-col {
+    flex: 1;
+    font-size: 0.86rem;
+    color: #334155;
+    line-height: 1.45;
+}
+
+.pyramid-guide-heading {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.pyramid-rules-list {
+    margin: 0 0 8px 18px;
+    padding: 0;
+}
+
+.pyramid-rules-list li {
+    margin-bottom: 4px;
+}
+
+.pyramid-guide-note {
+    font-size: 0.8rem;
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border-left: 3px solid #3b82f6;
+}
+
+/* İnteraktif Piramit Tahtası */
+.pyramid-board-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.pyramid-instruction-tip {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0f172a;
+    background: #fffbeb;
+    border: 1.5px solid #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 9px 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.pyramid-board {
+    position: relative;
+    padding: 10px 16px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pyramid-svg-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.pyramid-rows-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    position: relative;
+    z-index: 2;
+}
+
+.pyramid-row {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+}
+
+.pyramid-node {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #0f172a;
+    font-family: var(--font-display, sans-serif);
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.pyramid-node:hover {
+    transform: scale(1.16);
+    border-color: #ef4444;
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.pyramid-node.selected {
+    background: #ef4444 !important;
+    border-color: #b91c1c !important;
+    color: #ffffff !important;
+    transform: scale(1.12);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.55);
+}
+
+/* Durum ve Sayı Takip Paneli */
+.pyramid-status-panel {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pyramid-status-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.status-label {
+    font-size: 0.83rem;
+    font-weight: 800;
+    color: #475569;
+    min-width: 125px;
+}
+
+.path-text {
+    font-family: monospace;
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #dc2626;
+    background: #ffffff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.number-badges-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.num-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 800;
+    border: 1.5px solid #cbd5e1;
+    background: #ffffff;
+    color: #94a3b8;
+    transition: all 0.2s ease;
+}
+
+.num-badge.used {
+    background: #10b981;
+    border-color: #059669;
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+.num-badge.duplicate {
+    background: #f59e0b;
+    border-color: #d97706;
+    color: #ffffff;
+}
+
+.pyramid-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.btn-clear-pyramid {
+    padding: 6px 14px;
+    background: #f1f5f9;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-clear-pyramid:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
+
+.pyramid-save-status {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #10b981;
+}
+
