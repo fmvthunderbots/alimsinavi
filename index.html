@@ -9,14 +9,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <!-- CSS Stylesheets -->
-    <link rel="stylesheet" href="style.css?v=18">
+    <link rel="stylesheet" href="style.css?v=25">
 </head>
 <body>
 
     <!-- APP HEADER -->
     <header class="app-header">
         <div class="header-brand">
-            <h1>Teknik ve Proje Kulübü Değerlendirme Sınavı</h1>
+            <h1>Teknik ve Proje Kulübü<br>Değerlendirme Sınavı</h1>
         </div>
         <div class="header-student-info">
             <!-- EXAM TIMER BADGE -->
@@ -89,8 +89,17 @@
                         Robotunuzun sahada her bir kenar uzunluğu tam olarak 40 cm olan bir eşkenar üçgen çizerek başlangıç noktasına geri dönmesini sağlayan kodu yazınız.
                     </p>
 
-                    <!-- PORT HARİTASI BILGISI -->
-                    <div class="hardware-port-map" id="hardwarePortMap">
+                </div>
+            </div>
+
+            <!-- CANVAS / DROP AREA -->
+            <div class="canvas-container" id="canvasContainer">
+                <div class="canvas-grid-bg"></div>
+
+                <!-- CANVAS ÜST KONTROLLERİ (PORT HARİTASI VE SİLME ALANI) -->
+                <div class="canvas-top-controls" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 16px; position: relative; z-index: 50;">
+                    <!-- PORT HARİTASI BILGISI (KOD ÇALIŞMA ALANINDA) -->
+                    <div class="hardware-port-map" id="hardwarePortMap" style="margin-bottom: 0;">
                         <span class="port-map-title">📍 PORT HARİTASI:</span>
                         <div class="port-chip-group">
                             <div class="port-chip"><span class="port-badge bg-pink">A</span> <span class="port-label">Büyük Motor</span></div>
@@ -102,26 +111,16 @@
                         </div>
                     </div>
 
-                    <!-- KODLAMAYA BAŞLAMA & SİMÜLATÖR EYLEMLERİ -->
-                    <div class="banner-actions-row">
-                        <button id="btnStartCodingNow" class="btn-start-coding" title="Yönergeyi daraltıp kod tuvaline odaklan">
-                            ✍️ Yönergeyi Okudum, Kodlamaya Başla ➡
-                        </button>
-                        <button id="btnOpenSimFromBanner" class="btn-pulse-sim" style="display: none;">
-                            🤖 2D Robotik Simülatör Test Pistini Aç ➡
-                        </button>
+                    <!-- SILME ALANI (SAĞ ÜST) -->
+                    <div id="trashZone" class="trash-zone" style="position: static; margin-bottom: 0;">
+                        🗑️ Bloğu Silmek İçin Buraya Bırakın
                     </div>
                 </div>
-            </div>
 
-            <!-- CANVAS / DROP AREA -->
-            <div class="canvas-container" id="canvasContainer">
-                <div class="canvas-grid-bg"></div>
-
-                <!-- SILME ALANI (TRASH ZONE) -->
-                <div id="trashZone" class="trash-zone">
-                    🗑️ Bloğu Silmek İçin Buraya Bırakın
-                </div>
+                <!-- TÜM KODLARI SİL BUTONU (SAĞ ÜST) -->
+                <button id="btnClearCanvas" class="btn-clear-canvas" title="Çalışma Alanındaki Tüm Kodları Sil" style="position: absolute; top: 16px; right: 16px; z-index: 50;">
+                    🗑️ Hepsini Sil
+                </button>
 
                 <!-- ANA YIĞIN CONTAINER -->
                 <div id="blockDropList" class="block-drop-list">
@@ -264,11 +263,7 @@
 
             <!-- WORKSPACE FOOTER CONTROLS -->
             <footer class="workspace-footer">
-                <div class="footer-left">
-                    <button id="btnClearCanvas" class="btn btn-outline" title="Çalışma Alanındaki Kodları Temizle">
-                        🗑️ Temizle
-                    </button>
-                </div>
+                <div class="footer-left"></div>
                 <div class="footer-right">
                     <button id="btnPrevQuestion" class="btn btn-outline" disabled>
                         ⬅ Önceki
@@ -356,7 +351,7 @@
         <div class="modal-card modal-auth-card">
             <div class="modal-header">
                 <span class="modal-badge">THUNDER ⚡ BOTS DEĞERLENDİRME PLATFORMU</span>
-                <h2>Teknik ve Proje Kulübü Değerlendirme Sınavı</h2>
+                <h2>Teknik ve Proje Kulübü<br>Değerlendirme Sınavı</h2>
                 <p>Lütfen devam etmek için giriş türünüzü seçiniz.</p>
             </div>
 
@@ -677,8 +672,8 @@
     </div>
 
     <!-- JS Logic -->
-    <script src="blocks-data.js?v=19"></script>
+    <script src="blocks-data.js?v=20"></script>
     <script src="simulator-engine.js?v=10"></script>
-    <script src="app.js?v=21"></script>
+    <script src="app.js?v=28"></script>
 </body>
 </html>

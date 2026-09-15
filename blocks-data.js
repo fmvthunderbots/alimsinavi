@@ -745,7 +745,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q5',
         type: 'paper_input',
         title: '5. Soru: Hedef Tahtası Mantık Algoritması',
-        description: 'Üzerinde 13, 21, 28 ve 32 puanlık 4 farklı bölge bulunan bir hedef tahtasına ok atışları yapılacaktır.<br><br><img src="https://i.imgur.com/qqx1avJ.png" alt="Hedef Tahtası Görseli" style="max-width: 180px; display: block; margin: 10px auto; border-radius: 8px;"><br>En az sayıda ok atarak TAM 100 PUAN toplamak için hangi alanlara kaçar ok atmak gerekir?<br><br><b>SORU:</b> Her bir bölgeye atılması gereken ok sayılarını aşağıdaki kutucuklara giriniz.'
+        description: 'Üzerinde 13, 21, 28 ve 32 puanlık 4 farklı bölge bulunan bir hedef tahtasına ok atışları yapılacaktır.<br><br><img src="https://i.imgur.com/qqx1avJ.png" alt="Hedef Tahtası Görseli" style="max-width: 120px; display: block; margin: 10px auto; border-radius: 8px;"><br>En az sayıda ok atarak TAM 100 PUAN toplamak için hangi alanlara kaçar ok atmak gerekir?<br><br><b>SORU:</b> Her bir bölgeye atılması gereken ok sayılarını aşağıdaki kutucuklara giriniz.'
     },
     {
         id: 'q6',

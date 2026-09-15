@@ -493,17 +493,22 @@ div[class*="used-numbers"] {
     box-shadow: 0 6px 16px rgba(16, 185, 129, 0.45);
 }
 
-/* SADE PORT HARİTASI BAR TASARIMI (A: Büyük Motor vb.) */
+/* SADE PORT HARİTASI BAR TASARIMI (A: Büyük Motor vb. - KOD ÇALIŞMA ALANINDA) */
 .hardware-port-map {
-    margin-top: 10px;
-    background: #f8fafc;
+    position: relative;
+    z-index: 10;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
     border: 1px solid #cbd5e1;
     border-radius: var(--radius-md);
-    padding: 8px 12px;
+    padding: 6px 14px;
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    align-self: flex-start;
 }
 
 .port-map-title {
@@ -546,6 +551,70 @@ div[class*="used-numbers"] {
     font-size: 0.78rem;
     font-weight: 700;
     color: #1e293b;
+}
+
+/* CANVAS KONTROLLERİ (SAĞ ÜST SİLME ALANI & SAĞ ALT HEPSİNİ SİL) */
+.canvas-container {
+    position: relative !important;
+}
+
+/* BLOĞU SİLME ALANI (SAĞ ÜST) */
+.trash-zone {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 50;
+    background-color: rgba(254, 226, 226, 0.96);
+    border: 2px dashed #f87171;
+    color: #dc2626;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.18);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+
+.trash-zone.drag-over {
+    background-color: #fee2e2 !important;
+    border-color: #b91c1c !important;
+    color: #b91c1c !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35) !important;
+}
+
+.btn-clear-canvas {
+    background-color: rgba(255, 255, 255, 0.96);
+    border: 1.5px solid #fca5a5;
+    color: #dc2626;
+    font-family: var(--font-primary);
+    font-weight: 800;
+    font-size: 0.82rem;
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.btn-clear-canvas:hover {
+    background-color: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+    transform: translateY(-1px);
 }
 
 /* --- CANLI VE GÖZE ÇARPAN YÖNERGE KARTI (KABLO BAĞLAMA MODALI) --- */
@@ -2816,3 +2885,61 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
     color: #10b981;
 }
 
+/* --- HEDEF TAHTASI INPUT GRID (SORU 5) --- */
+.target-inputs-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.target-input-card {
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    flex: 1;
+    min-width: 140px;
+}
+
+.target-chip {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.target-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.target-num-input {
+    width: 60px;
+    padding: 6px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.target-num-input:focus {
+    border-color: #0284c7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.target-input-row .unit-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+}
