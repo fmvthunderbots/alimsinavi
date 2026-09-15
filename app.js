@@ -4,7 +4,7 @@
  */
 
 /// ⚙️ E-TABLO BAĞLANTI AYARLARI VE ÖĞRETMEN YÖNETİMİ
-const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxjGeBKvETpX66SNk-Pv0pLKYUTDWohce0MyHi9rxHgzUfAiHkJNZ2x3P4SM8rQSX_r/exec';
+const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby94MvM23HsJWHWaff5NSuWpLICDagA_tVomH6aePEIYn9fT8YsCofUMHttuWEFwyx6/exec';
 const TEACHER_MASTER_PASSWORD = '26575982824.bati';
 const STORAGE_TEACHER_LOGGED = 'spike_teacher_authenticated';
 

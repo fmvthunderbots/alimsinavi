@@ -93,9 +93,9 @@ function doPost(e) {
     // --- 6. SORU (MANTIK 4 - Kutu Silme Mantık Algoritması) ---
     var q6Ans = data.q6Answer || "(Yanıt verilmedi)";
     var q6Clean = q6Ans.toLowerCase().replace(/\s+/g, "");
-    var q6Score = ((q6Clean.indexOf("4") !== -1 && q6Clean.indexOf("3") !== -1) || q6Clean.indexOf("3-7x1") !== -1 || q6Clean.indexOf("3-7*1") !== -1 || q6Clean.indexOf("5x2-14") !== -1 || q6Clean.indexOf("5*2-14") !== -1) ? 10 : 0;
-    sheet.appendRow(["💡 6. SORU MANTIK YANITI (Kutu Silme):", q6Ans]);
-    sheet.appendRow(["🎯 BEKLENEN YANIT:", "Silinmesi gereken iki kutudaki ifadeler (Görsele göre değerlendiriniz)"]);
+    var q6Score = (((q6Clean.indexOf("-") !== -1 || q6Clean.indexOf("eksi") !== -1) && q6Clean.indexOf("7") !== -1) || q6Clean.indexOf("5x5+8") !== -1 || q6Clean.indexOf("5*5+8") !== -1 || q6Clean.indexOf("9+24") !== -1 || q6Clean.indexOf("33") !== -1) ? 10 : 0;
+    sheet.appendRow(["🧠 6. SORU MANTIK YANITI (Kutu Silme):", q6Ans]);
+    sheet.appendRow(["✅ BEKLENEN YANIT:", "'-' (Eksi) ve '7' silinmeli ➔ (5x5 + 8 = 9 + 24 = 33)"]);
     sheet.getRange(sheet.getLastRow(), 1, 1, 2).setFontColor("#15803d").setBackground("#f0fdf4");
     sheet.appendRow(["📝 6. Soru Puanı (Max 10):", q6Score]);
     var q6ScoreRow = sheet.getLastRow();

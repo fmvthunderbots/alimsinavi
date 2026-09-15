@@ -45,7 +45,7 @@ const INITIAL_BLOCKS = [
         inputs: [
             { id: 'steer', type: 'text', default: 'sağ: 90' },
             { id: 'val', type: 'number', default: 10 },
-            { id: 'unit', type: 'select', options: ['tur', 'derece', 'saniye'], default: 'tur' }
+            { id: 'unit', type: 'select', options: ['tur', 'derece', 'saniye', 'cm', 'inç'], default: 'tur' }
         ]
     },
     {
@@ -56,7 +56,7 @@ const INITIAL_BLOCKS = [
         inputs: [
             { id: 'steer', type: 'text', default: 'sol: 90' },
             { id: 'val', type: 'number', default: 10 },
-            { id: 'unit', type: 'select', options: ['tur', 'derece', 'saniye'], default: 'tur' }
+            { id: 'unit', type: 'select', options: ['tur', 'derece', 'saniye', 'cm', 'inç'], default: 'tur' }
         ]
     },
     {
@@ -733,7 +733,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q3',
         type: 'pyramid',
         title: '3. Soru: Sihirli Piramit (Mantık & Muhakeme)',
-        description: 'Yukarıdaki çözümlü sihirli piramit örneğini inceleyiniz. Ardından aşağıdaki 10 basamaklı interaktif sihirli piramitte dairelerin üzerine tıklayarak tepeden tabana doğru 1\'den 10\'a kadar her sayının tam birer kez kullanıldığı doğru rotayı oluşturunuz.'
+        description: ''
     },
     {
         id: 'q4',
@@ -745,13 +745,13 @@ const DEFAULT_QUESTIONS = [
         id: 'q5',
         type: 'paper_input',
         title: '5. Soru: Hedef Tahtası Mantık Algoritması',
-        description: 'Üzerinde 13, 21, 28 ve 32 puanlık 4 farklı bölge bulunan bir hedef tahtasına ok atışları yapılacaktır.\n\nEn az sayıda ok atarak TAM 100 PUAN toplamak için hangi alanlara kaçar ok atmak gerekir?\n\nSORU: Her bir bölgeye atılması gereken ok sayılarını aşağıdaki kutucuklara giriniz.'
+        description: 'Üzerinde 13, 21, 28 ve 32 puanlık 4 farklı bölge bulunan bir hedef tahtasına ok atışları yapılacaktır.<br><br><img src="https://i.imgur.com/qqx1avJ.png" alt="Hedef Tahtası Görseli" style="max-width: 180px; display: block; margin: 10px auto; border-radius: 8px;"><br>En az sayıda ok atarak TAM 100 PUAN toplamak için hangi alanlara kaçar ok atmak gerekir?<br><br><b>SORU:</b> Her bir bölgeye atılması gereken ok sayılarını aşağıdaki kutucuklara giriniz.'
     },
     {
         id: 'q6',
         type: 'paper_input',
         title: '6. Soru: Kutu Silme Mantık Algoritması',
-        description: 'Aşağıdaki matematiksel eşitlikte kutulardan İKİSİNİ silerek eşitliği doğru hale getiriniz.<br><br><img src="https://i.imgur.com/obCH5j1.jpeg" alt="Kutu Silme Soru Görseli" style="max-width: 100%; border-radius: 8px; margin: 10px 0;"><br><br>💡 <b>Not:</b> Silinecek kutular <b>sayı</b> olabileceği gibi <b>işlem sembolleri (+, -, ×)</b> de olabilir. İşlemlerde çarpma ve bölme, toplama ve çıkarmaya göre önceliklidir.<br><br><b>SORU:</b> Silinmesi gereken iki kutudaki ifadeleri yazınız.'
+        description: 'Aşağıdaki matematiksel eşitlikte kutulardan İKİSİNİ silerek eşitliği doğru hale getiriniz.<br><br><img src="https://i.imgur.com/XA1Sj6T.png" alt="Kutu Silme Soru Görseli" style="max-width: 100%; border-radius: 8px; margin: 10px 0;"><br><br>💡 <b>Not:</b> Silinecek kutular <b>sayı</b> olabileceği gibi <b>işlem sembolleri (+, -, ×)</b> de olabilir. İşlemlerde çarpma ve bölme, toplama ve çıkarmaya göre önceliklidir.<br><br><b>SORU:</b> Silinmesi gereken iki kutudaki değerleri yazınız.'
     },
     {
         id: 'q7',
