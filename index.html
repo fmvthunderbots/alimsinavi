@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <!-- CSS Stylesheets -->
-    <link rel="stylesheet" href="style.css?v=25">
+    <link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
 
@@ -29,9 +29,6 @@
                 <span class="user-icon">👤</span>
                 <span id="studentInfoText"></span>
             </div>
-            <button id="btnToggleSimulator" class="btn-header-sim" title="2D Robotik Simülatörünü Aç/Kapat">
-                🤖 Simülatör
-            </button>
             <div id="teacherTestBanner" class="teacher-test-banner" style="display: none;">
                 <span class="test-mode-badge">🧪 Öğretmen Test Modu</span>
                 <div class="teacher-timer-controls">
@@ -88,7 +85,6 @@
                     <p id="questionDesc" class="question-desc">
                         Robotunuzun sahada her bir kenar uzunluğu tam olarak 40 cm olan bir eşkenar üçgen çizerek başlangıç noktasına geri dönmesini sağlayan kodu yazınız.
                     </p>
-
                 </div>
             </div>
 
@@ -96,31 +92,28 @@
             <div class="canvas-container" id="canvasContainer">
                 <div class="canvas-grid-bg"></div>
 
-                <!-- CANVAS ÜST KONTROLLERİ (PORT HARİTASI VE SİLME ALANI) -->
-                <div class="canvas-top-controls" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 16px; position: relative; z-index: 50;">
-                    <!-- PORT HARİTASI BILGISI (KOD ÇALIŞMA ALANINDA) -->
-                    <div class="hardware-port-map" id="hardwarePortMap" style="margin-bottom: 0;">
-                        <span class="port-map-title">📍 PORT HARİTASI:</span>
-                        <div class="port-chip-group">
-                            <div class="port-chip"><span class="port-badge bg-pink">A</span> <span class="port-label">Büyük Motor</span></div>
-                            <div class="port-chip"><span class="port-badge bg-pink">B</span> <span class="port-label">Büyük Motor</span></div>
-                            <div class="port-chip"><span class="port-badge bg-blue">C</span> <span class="port-label">Küçük Motor</span></div>
-                            <div class="port-chip"><span class="port-badge bg-blue">D</span> <span class="port-label">Küçük Motor</span></div>
-                            <div class="port-chip"><span class="port-badge bg-teal">E</span> <span class="port-label">Renk Sensörü</span></div>
-                            <div class="port-chip"><span class="port-badge bg-teal">F</span> <span class="port-label">Renk Sensörü</span></div>
-                        </div>
-                    </div>
-
-                    <!-- SILME ALANI (SAĞ ÜST) -->
-                    <div id="trashZone" class="trash-zone" style="position: static; margin-bottom: 0;">
-                        🗑️ Bloğu Silmek İçin Buraya Bırakın
+                <!-- PORT HARİTASI BILGISI (KOD ÇALIŞMA ALANINDA) -->
+                <div class="hardware-port-map" id="hardwarePortMap">
+                    <span class="port-map-title">📍 PORT HARİTASI:</span>
+                    <div class="port-chip-group">
+                        <div class="port-chip"><span class="port-badge bg-pink">A</span> <span class="port-label">Büyük Motor</span></div>
+                        <div class="port-chip"><span class="port-badge bg-pink">B</span> <span class="port-label">Büyük Motor</span></div>
+                        <div class="port-chip"><span class="port-badge bg-blue">C</span> <span class="port-label">Küçük Motor</span></div>
+                        <div class="port-chip"><span class="port-badge bg-blue">D</span> <span class="port-label">Küçük Motor</span></div>
+                        <div class="port-chip"><span class="port-badge bg-teal">E</span> <span class="port-label">Renk Sensörü</span></div>
+                        <div class="port-chip"><span class="port-badge bg-teal">F</span> <span class="port-label">Renk Sensörü</span></div>
                     </div>
                 </div>
 
-                <!-- TÜM KODLARI SİL BUTONU (SAĞ ÜST) -->
-                <button id="btnClearCanvas" class="btn-clear-canvas" title="Çalışma Alanındaki Tüm Kodları Sil" style="position: absolute; top: 16px; right: 16px; z-index: 50;">
-                    🗑️ Hepsini Sil
-                </button>
+                <!-- SAĞ ALT KONTROL VE SİLME ALANI -->
+                <div class="canvas-bottom-right-controls">
+                    <button id="btnClearCanvas" class="btn-clear-canvas" title="Çalışma Alanındaki Tüm Kodları Sil">
+                        🗑️ Hepsini Sil
+                    </button>
+                    <div id="trashZone" class="trash-zone">
+                        🗑️ Bloğu Silmek İçin Buraya Bırakın
+                    </div>
+                </div>
 
                 <!-- ANA YIĞIN CONTAINER -->
                 <div id="blockDropList" class="block-drop-list">
@@ -207,25 +200,7 @@
                             <h3>Sihirli Piramit Rotası</h3>
                         </div>
 
-                        <!-- ÇÖZÜMLÜ ÖRNEK VE REHBER PANELİ -->
-                        <div class="pyramid-guide-box">
-                            <div class="pyramid-guide-img-col">
-                                <img src="pyramid_example.png" alt="Sihirli Piramit Çözümlü Örnek" class="pyramid-example-img">
-                                <span class="pyramid-guide-caption">📘 Çözümlü Örnek (6 Basamak)</span>
-                            </div>
-                            <div class="pyramid-guide-rules-col">
-                                <div class="pyramid-guide-heading">Sihirli Piramit Nasıl Çözülür?</div>
-                                <ul class="pyramid-rules-list">
-                                    <li><b>Başlangıç ve Bitiş:</b> Piramidin en tepesindeki daireden başlayıp en alt satıra kadar birbirine bağlı komşu daireleri seçiniz.</li>
-                                    <li><b>Satır Kuralı:</b> Her satırdan <b>yalnızca bir daire</b> seçebilirsiniz.</li>
-                                    <li><b>Bağlantı Kuralı:</b> Bir daireden yalnızca hemen altındaki <b>sol veya sağ çapraz komşusuna</b> inilebilir.</li>
-                                    <li><b>Tekil Sayı Kuralı:</b> Rota üzerindeki 10 dairede, <b>1'den 10'a kadar her sayı tam olarak bir kez</b> kullanılmalıdır (aynı sayı iki kez seçilemez).</li>
-                                </ul>
-                                <div class="pyramid-guide-note">
-                                    💡 <i>Yukarıdaki örnekte 4 ➔ 3 ➔ 2 ➔ 5 ➔ 1 ➔ 6 rotası oluşturulmuş ve 1'den 6'ya her sayı birer kez kullanılmıştır.</i>
-                                </div>
-                            </div>
-                        </div>
+
 
                         <!-- İNTERAKTİF PİRAMİT ÇALIŞMA ALANI -->
                         <div class="pyramid-board-wrapper">
@@ -278,72 +253,6 @@
             </footer>
         </section>
 
-        <!-- 2D ROBOTİK SİMÜLASYON PANELİ (OPEN ROBERTA ESİNTİLİ) -->
-        <aside class="sim-drawer" id="simDrawer">
-            <div class="sim-drawer-header">
-                <div class="sim-header-title">
-                    <span class="sim-brand-icon">🤖</span>
-                    <div class="sim-title-group">
-                        <h3>2D Robot Simülatörü</h3>
-                        <span class="sim-sub">Sanal SPIKE Test Pisti</span>
-                    </div>
-                </div>
-                <div class="sim-header-actions">
-                    <select id="simTrackSelect" class="sim-track-select">
-                        <option value="q7">7. Soru Parkuru (Rota Takibi)</option>
-                        <option value="q8">8. Soru Parkuru (Renk Şeritleri)</option>
-                        <option value="free">Açık Parkur (Serbest)</option>
-                    </select>
-                    <button id="btnCloseSimulator" class="btn-close-sim" title="Paneli Kapat">✕</button>
-                </div>
-            </div>
-
-            <!-- CANVASI VE GÖREV BİLGİSİ -->
-            <div class="sim-canvas-wrapper">
-                <canvas id="simCanvas" width="480" height="380"></canvas>
-                <div class="sim-canvas-overlay-badge badge-default" id="simMissionBadge">Hazır</div>
-            </div>
-
-            <!-- CANLI SENSÖR & TELEMETRİ GÖSTERGESİ (HUD) -->
-            <div class="sim-telemetry-panel">
-                <div class="telemetry-card">
-                    <span class="telemetry-label">🎨 Renk Sensörü:</span>
-                    <span class="telemetry-pill" id="simPillColor">Beyaz</span>
-                </div>
-                <div class="telemetry-card">
-                    <span class="telemetry-label">📏 Mesafe:</span>
-                    <span class="telemetry-val" id="simTxtDistance">50 cm</span>
-                </div>
-                <div class="telemetry-card">
-                    <span class="telemetry-label">🧭 Yön Açısı:</span>
-                    <span class="telemetry-val" id="simTxtHeading">0°</span>
-                </div>
-                <div class="telemetry-card">
-                    <span class="telemetry-label">⚙️ Motor Durumu:</span>
-                    <span class="telemetry-val" id="simTxtMotors">Duruyor ⏹</span>
-                </div>
-            </div>
-
-            <!-- SİMÜLATÖR KONTROL BUTONLARI -->
-            <div class="sim-footer-controls">
-                <!-- 3 SİMÜLASYON HAKKI GÖSTERGESİ -->
-                <div class="sim-attempts-indicator" id="simAttemptsIndicator">
-                    <span class="attempts-label">🎯 Kalan Simülasyon Hakkı:</span>
-                    <span class="attempt-pill pill-green" id="simAttemptsBadge">3 / 3 Hak</span>
-                </div>
-                <button id="btnSimPlay" class="btn btn-sim-play" title="Kodu Robot Üzerinde Test Et (Toplam 3 Deneme Hakkı)">
-                    ▶ Kodu Simüle Et <span class="sim-attempts-tag" id="btnSimAttemptsTag">(3/3 Hak)</span>
-                </button>
-                <div class="sim-controls-sub-row">
-                    <button id="btnSimReset" class="btn btn-outline btn-sim-reset" title="Robotu Başlangıç Noktasına Al">
-                        🔄 Başa Al
-                    </button>
-                    <button id="btnSimSnapshot" class="btn btn-outline btn-sim-snapshot" title="Pistin Ekran Görüntüsünü Al">
-                        📸 Fotoğraf
-                    </button>
-                </div>
-            </div>
-        </aside>
     </main>
 
     <!-- 1. ANA GİRİŞ VE ROL SEÇİMİ MODALI (ÖĞRENCİ / ÖĞRETMEN) -->
@@ -614,16 +523,13 @@
         <div class="modal-card modal-lg" style="max-width: 660px;">
             <div class="modal-header">
                 <span class="modal-badge" style="background:#e0e7ff; color:#4338ca;">ÖĞRETMEN İNCELEME PANELİ</span>
-                <h2>Öğrenci Kodunu Yükle ve Canlı İncele 🎓</h2>
-                <p>Google E-Tablo'dan kopyaladığınız öğrenci kod verisini (JSON) veya aktif sınavdaki öğrencinin yanıtını yükleyip simülatörde canlı izleyebilirsiniz.</p>
+                <h2>Öğrenci Kodunu Yükle ve İncele 🎓</h2>
+                <p>Google E-Tablo'dan kopyaladığınız öğrenci kod verisini (JSON) veya aktif sınavdaki öğrencinin yanıtını tuvale yükleyip inceleyebilirsiniz.</p>
             </div>
             <div class="teacher-modal-body" style="display:flex; flex-direction:column; gap:12px; margin: 16px 0;">
                 <div style="display:flex; gap: 10px; flex-wrap: wrap;">
                     <button id="btnTeacherLoadCurrent" class="btn btn-outline" style="flex:1; min-width: 200px; font-weight: 600;">
                         📥 Aktif Öğrencinin Kodunu Al
-                    </button>
-                    <button id="btnTeacherCaptureWorkspace" class="btn btn-outline" style="flex:1; min-width: 200px; font-weight: 600;">
-                        📸 Simülatör Görüntüsünü İndir (PNG)
                     </button>
                 </div>
                 <label style="font-size:0.85rem; font-weight:700; color:#334155; margin-top: 6px;">Veya Öğrenci Kod Verisini (JSON / Metin) Yapıştırınız:</label>
@@ -632,8 +538,8 @@
             </div>
             <div class="custom-block-footer" style="display:flex; justify-content:flex-end; gap:10px;">
                 <button id="btnCloseTeacherModal" class="btn btn-outline">Kapat</button>
-                <button id="btnTeacherApplyAndSim" class="btn btn-primary" style="background:#4f46e5; border:none; padding: 10px 18px;">
-                    🚀 Tuvale Yükle ve Simüle Et
+                <button id="btnTeacherApply" class="btn btn-primary" style="background:#4f46e5; border:none; padding: 10px 18px;">
+                    🚀 Tuvale Yükle
                 </button>
             </div>
         </div>
@@ -673,7 +579,6 @@
 
     <!-- JS Logic -->
     <script src="blocks-data.js?v=20"></script>
-    <script src="simulator-engine.js?v=10"></script>
-    <script src="app.js?v=28"></script>
+    <script src="app.js?v=23"></script>
 </body>
 </html>

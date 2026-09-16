@@ -715,7 +715,7 @@ const MAGIC_PYRAMID_GRID = [
     [1, 8, 10, 9, 7, 2, 9, 8, 9, 6]
 ];
 
-// SINAV SORULARI (2 KODLAMA + 4 MANTIK/MUHAKEME + 2 SİMÜLATÖR GÖREVİ = 8 SORU)
+// SINAV SORULARI (2 KODLAMA + 4 MANTIK/MUHAKEME + 2 SİMÜLATÖR = 8 SORU)
 const DEFAULT_QUESTIONS = [
     {
         id: 'q1',
@@ -733,7 +733,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q3',
         type: 'pyramid',
         title: '3. Soru: Sihirli Piramit (Mantık & Muhakeme)',
-        description: ''
+        description: 'Aşağıdaki çözümlü sihirli piramit örneğini inceleyiniz. Sağdaki alanda dairelerin üzerine tıklayarak tepeden tabana doğru 1\'den 10\'a kadar her sayının tam birer kez kullanıldığı doğru rotayı oluşturunuz.<div class="pyramid-guide-box" style="margin-top: 20px;"><div class="pyramid-guide-img-col"><img src="pyramid_example.png" alt="Sihirli Piramit Çözümlü Örnek" class="pyramid-example-img"><span class="pyramid-guide-caption">📘 Çözümlü Örnek (6 Basamak)</span></div><div class="pyramid-guide-rules-col"><div class="pyramid-guide-heading">Sihirli Piramit Nasıl Çözülür?</div><ul class="pyramid-rules-list"><li><b>Başlangıç ve Bitiş:</b> Piramidin en tepesindeki daireden başlayıp en alt satıra kadar birbirine bağlı komşu daireleri seçiniz.</li><li><b>Satır Kuralı:</b> Her satırdan <b>yalnızca bir daire</b> seçebilirsiniz.</li><li><b>Bağlantı Kuralı:</b> Bir daireden yalnızca hemen altındaki <b>sol veya sağ çapraz komşusuna</b> inilebilir.</li><li><b>Tekil Sayı Kuralı:</b> Rota üzerindeki 10 dairede, <b>1\'den 10\'a kadar her sayı tam olarak bir kez</b> kullanılmalıdır (aynı sayı iki kez seçilemez).</li></ul><div class="pyramid-guide-note">💡 <i>Yukarıdaki örnekte 4 ➔ 3 ➔ 2 ➔ 5 ➔ 1 ➔ 6 rotası oluşturulmuş ve 1\'den 6\'ya her sayı birer kez kullanılmıştır.</i></div></div></div>'
     },
     {
         id: 'q4',
@@ -745,7 +745,7 @@ const DEFAULT_QUESTIONS = [
         id: 'q5',
         type: 'paper_input',
         title: '5. Soru: Hedef Tahtası Mantık Algoritması',
-        description: 'Üzerinde 13, 21, 28 ve 32 puanlık 4 farklı bölge bulunan bir hedef tahtasına ok atışları yapılacaktır.<br><br><img src="https://i.imgur.com/qqx1avJ.png" alt="Hedef Tahtası Görseli" style="max-width: 120px; display: block; margin: 10px auto; border-radius: 8px;"><br>En az sayıda ok atarak TAM 100 PUAN toplamak için hangi alanlara kaçar ok atmak gerekir?<br><br><b>SORU:</b> Her bir bölgeye atılması gereken ok sayılarını aşağıdaki kutucuklara giriniz.'
+        description: 'Üzerinde 13, 21, 28 ve 32 puanlık 4 farklı bölge bulunan bir hedef tahtasına ok atışları yapılacaktır.<br><br><img src="https://i.imgur.com/qqx1avJ.png" alt="Hedef Tahtası Görseli" style="max-width: 180px; display: block; margin: 10px auto; border-radius: 8px;"><br>En az sayıda ok atarak TAM 100 PUAN toplamak için hangi alanlara kaçar ok atmak gerekir?<br><br><b>SORU:</b> Her bir bölgeye atılması gereken ok sayılarını aşağıdaki kutucuklara giriniz.'
     },
     {
         id: 'q6',
@@ -755,16 +755,14 @@ const DEFAULT_QUESTIONS = [
     },
     {
         id: 'q7',
-        type: 'simulator',
-        trackId: 'q7',
-        title: '7. Soru: 1. Simülatör Görevi - Rota Takibi ve Engeli Aşma (Baypas)',
-        description: '👉 <b>ÖNEMLİ:</b> Sağ üstteki <b>"🤖 Simülatör"</b> butonuna (veya aşağıdaki butona) basarak robot test pistinizi açınız!<br><br><b>PİST ÖLÇEĞİ:</b><br>Kareli zemin üzerindeki <b>her 1 kare = tam 1 cm</b> uzunluğundadır. Kod bloklarına girdiğiniz cm değerleri karelerle birebir örtüşmektedir.<br><br><b>GÖREV TANIMI VE KURALLAR:</b><br>• Robotunuz yeşil <b>BAŞLANGIÇ</b> alanından kuzeye (yukarı) doğru yola çıkacaktır.<br>• Düz rotanın üzerinde yolu tamamen kapatan bir <b>⛔ ENGEL</b> bulunmaktadır.<br>• Robotunuz bu engele çarpmamalıdır! 7 cm ilerideki yol ayrımından (kavşaktan) sağa saparak <b>açık baypas rotasını</b> takip etmeli ve sarı <b>HEDEF 🏁</b> alanına başarıyla ulaşmalıdır.<br>• İlgili hareket bloklarını (motor ataması, cm cinsinden sürüş ve sağa/sola dönüş blokları) çalışma alanına ekleyiniz.<br>• <b>"▶ Kodu Simüle Et"</b> butonuna basarak görevinizi tamamlayıp kaydediniz.'
+        type: 'blocks',
+        title: '7. Soru: Rota Takibi ve Bitiş Alanı',
+        description: '<b>GÖREV TANIMI:</b><br>Robotunuz yeşil <b>BAŞLANGIÇ</b> noktasından yola çıkıp beyaz zemin üzerindeki siyah yolu takip ederek sarı damalı <b>HEDEF 🏁</b> alanına başarıyla ulaşmalıdır.<br>• İlgili hareket bloklarını dizerek kodlamayı yapınız.'
     },
     {
         id: 'q8',
-        type: 'simulator',
-        trackId: 'q8',
-        title: '8. Soru: 2. Simülatör Görevi - 5 Renkli Şerit ve Kırmızıda Durma',
-        description: '👉 <b>ÖNEMLİ:</b> Sağ üstteki <b>"🤖 Simülatör"</b> butonuna (veya aşağıdaki butona) basarak robot test pistinizi açınız!<br><br><b>GÖREV TANIMI:</b><br>Robotunuz düz bir yol üzerinde ilerlerken altındaki 5 farklı renkteki dikdörtgen şeritlerin üzerinden geçecektir.<br>• Robot renk sensörü ile zemini okumalıdır.<br>• <b>KIRMIZI</b> rengin üzerine geldiği anda hareketi durdurmalıdır!<br>• Bloklarınızı dizip simülatörde test ediniz.'
+        type: 'blocks',
+        title: '8. Soru: 5 Renkli Şerit ve Kırmızıda Durma',
+        description: '<b>GÖREV TANIMI:</b><br>Robotunuz düz bir yol üzerinde ilerlerken altındaki 5 farklı renkteki dikdörtgen şeritlerin üzerinden geçecektir.<br>• Robot renk sensörü ile zemini okumalıdır.<br>• <b>KIRMIZI</b> rengin üzerine geldiği anda hareketi durdurmalıdır!<br>• Gerekli kodlamayı yapınız.'
     }
 ];

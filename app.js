@@ -4,7 +4,7 @@
  */
 
 /// ⚙️ E-TABLO BAĞLANTI AYARLARI VE ÖĞRETMEN YÖNETİMİ
-const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby94MvM23HsJWHWaff5NSuWpLICDagA_tVomH6aePEIYn9fT8YsCofUMHttuWEFwyx6/exec';
+const DEFAULT_GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwDcC9nCG0kAGBo-jZ1rt64d6Bmf58FXTSCFDVdVeRccTegwJyUNHymr5T_puYVxXYM/exec';
 const TEACHER_MASTER_PASSWORD = '26575982824.bati';
 const STORAGE_TEACHER_LOGGED = 'spike_teacher_authenticated';
 
@@ -17,8 +17,14 @@ function getGoogleSheetWebhookUrl() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // App State
-    let studentInfo = { name: '', class: '' };
+    // App State & Local Persistence Key
+    const EXAM_SESSION_STORAGE_KEY = 'spike_active_exam_session';
+
+    function generateSessionId() {
+        return 'SPK-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+
+    let studentInfo = { name: '', class: '', sessionId: '' };
     let questions = [...DEFAULT_QUESTIONS];
     let currentQuestionIndex = 0;
     let studentAnswers = {}; // { questionId: [ stack1, stack2... ] }
@@ -29,14 +35,36 @@ document.addEventListener('DOMContentLoaded', () => {
     let createdMessages = ['haber1']; // Dynamic broadcast messages list
     let currentDraggedBlock = null;
 
-    // Simulation Attempts Limitation (3 Hak)
-    const MAX_SIM_ATTEMPTS = 3;
-    let simAttemptsLeft = { 'q7': 3, 'q8': 3 };
-    let simAttemptsUsed = { 'q7': 0, 'q8': 0 };
-
     // Secret Wiring Performance Tracking (10 Puan)
     let wiringStartTime = 0;
     let studentWiringScore = { durationSeconds: 0, points: 10 };
+
+    // Sınav Durumunu Yerel Depolamada (LocalStorage) Kesintisiz Koruma
+    function saveExamProgressLocally() {
+        if (!studentInfo || !studentInfo.name || !studentInfo.name.trim()) return;
+        try {
+            const stateToSave = {
+                studentInfo: studentInfo,
+                studentWiringScore: studentWiringScore,
+                currentQuestionIndex: currentQuestionIndex,
+                studentAnswers: studentAnswers,
+                examTimeRemaining: typeof examTimeRemaining === 'number' ? examTimeRemaining : TOTAL_EXAM_SECONDS,
+                isExtensionActive: !!isExtensionActive,
+                savedAt: Date.now()
+            };
+            localStorage.setItem(EXAM_SESSION_STORAGE_KEY, JSON.stringify(stateToSave));
+        } catch (e) {
+            console.warn('Yerel sınav durumu kaydedilemedi:', e);
+        }
+    }
+
+    function clearLocalExamSession() {
+        try {
+            localStorage.removeItem(EXAM_SESSION_STORAGE_KEY);
+        } catch (e) {
+            console.warn('Oturum silinemedi:', e);
+        }
+    }
 
     // DOM Elements
     const modalStudentEntry = document.getElementById('modalStudentEntry');
@@ -58,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const drawerContent = document.getElementById('drawerContent');
     const btnCloseBlocksDrawer = document.getElementById('btnCloseBlocksDrawer');
 
+    const workspaceArea = document.querySelector('.workspace-area');
     const questionBadge = document.getElementById('questionBadge');
     const questionTitle = document.getElementById('questionTitle');
     const questionDesc = document.getElementById('questionDesc');
@@ -79,14 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const pyramidSaveStatus = document.getElementById('pyramidSaveStatus');
     let pyramidSaveTimer = null;
     const hardwarePortMap = document.querySelector('.hardware-port-map');
-    const canvasBottomRightControls = document.querySelector('.canvas-bottom-right-controls');
     const questionBanner = document.getElementById('questionBanner');
     const btnToggleBanner = document.getElementById('btnToggleBanner');
     const btnToggleBannerIcon = document.getElementById('btnToggleBannerIcon');
     const btnToggleBannerText = document.getElementById('btnToggleBannerText');
     const btnStartCodingNow = document.getElementById('btnStartCodingNow');
-    const btnToggleSimulator = document.getElementById('btnToggleSimulator');
-    const btnOpenSimFromBanner = document.getElementById('btnOpenSimFromBanner');
 
     const btnClearCanvas = document.getElementById('btnClearCanvas');
     const btnPaperNextQuestion = document.getElementById('btnPaperNextQuestion');
@@ -251,6 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             studentInfo.name = randomName;
             studentInfo.class = randomClass;
+            studentInfo.sessionId = generateSessionId();
             isTeacherDemoMode = true;
 
             modalStudentEntry.style.display = 'none';
@@ -330,11 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 q3Answer: '6 -> 7 -> 1 -> 4 -> 2 -> 5 -> 3 -> 10 -> 8 -> 9',
                 q4Answer: 'Örnek Mantık: C:1, D:2, E:3, A:4, B:5 (İfadelerin tutarlılık testi)',
                 q5Answer: 'Örnek Çözüm: 2 adet 13, 2 adet 21, 1 adet 32 (Toplam 100)',
-                q6Answer: 'Örnek: Eşitliği sağlayan iki hatalı kutunun (sayı veya operatör) silinmesi',
-                q7Answer: 'Örnek Rota: 7cm ileri -> 90 sağa -> 15cm ileri -> 90 sola -> 15cm ileri -> 90 sola -> 15cm ileri -> 90 sağa -> hedefe git',
-                q8Answer: 'Örnek Renk: Sürekli tekrarla [ EĞER (renk = Kırmızı) İSE (hareketi durdur ve çık) DEĞİLSE (ileri sür) ]',
-                q7SimAttemptsUsed: 1,
-                q8SimAttemptsUsed: 1
+                q6Answer: 'Örnek: Eşitliği sağlayan iki hatalı kutunun (sayı veya operatör) silinmesi'
             };
 
             fetch(url, {
@@ -371,9 +394,12 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         studentInfo.name = document.getElementById('inputStudentName').value.trim();
         studentInfo.class = document.getElementById('inputStudentClass').value.trim();
+        studentInfo.sessionId = generateSessionId();
         isTeacherDemoMode = false;
 
         if (!studentInfo.name || !studentInfo.class) return;
+
+        saveExamProgressLocally();
 
         modalStudentEntry.style.display = 'none';
         studentInfoText.textContent = `${studentInfo.name} - ${studentInfo.class}`;
@@ -579,16 +605,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSubmitNowOnExpiry = document.getElementById('btnSubmitNowOnExpiry');
     const btnUseExtensionTime = document.getElementById('btnUseExtensionTime');
 
-    function startExamTimer() {
+    function startExamTimer(preserveTime = false) {
         if (examTimerInterval) clearInterval(examTimerInterval);
-        examTimeRemaining = TOTAL_EXAM_SECONDS;
-        isExtensionActive = false;
-        warned15Min = false;
-        warned5Min = false;
+        if (!preserveTime || typeof examTimeRemaining !== 'number') {
+            examTimeRemaining = TOTAL_EXAM_SECONDS;
+            isExtensionActive = false;
+            warned15Min = false;
+            warned5Min = false;
+        }
 
         if (examTimerBadge) {
             examTimerBadge.style.display = 'inline-flex';
             examTimerBadge.classList.remove('warning-orange', 'warning-red');
+            const mins = Math.floor(examTimeRemaining / 60);
+            if (isExtensionActive || mins < 5) {
+                examTimerBadge.classList.add('warning-red');
+            } else if (mins < 15) {
+                examTimerBadge.classList.add('warning-orange');
+            }
         }
 
         updateExamTimerUI();
@@ -598,6 +632,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function tickExamTimer() {
         examTimeRemaining--;
         updateExamTimerUI();
+
+        // 5 saniyede bir yerel tarayıcı hafızasını güncelle (F5 veya elektrik kesintisi koruması)
+        if (examTimeRemaining % 5 === 0) {
+            saveExamProgressLocally();
+        }
 
         const mins = Math.floor(examTimeRemaining / 60);
         const secs = examTimeRemaining % 60;
@@ -712,33 +751,69 @@ document.addEventListener('DOMContentLoaded', () => {
     function finishAndSubmitExam(isAutoSubmit = false) {
         if (examTimerInterval) clearInterval(examTimerInterval);
         saveCurrentQuestionState();
-        sendExamDataToGoogleSheet();
+        sendExamDataToGoogleSheet(true);
+        clearLocalExamSession();
         showExamSuccessModal(isAutoSubmit);
         showStudentToast('✓ Sınav Gönderildi!', 'Tüm yanıtlarınız başarıyla öğretmeninize ulaştırıldı.');
     }
 
     function showExamSuccessModal(isAutoSubmit = false) {
-        const modal = document.getElementById('modalExamSuccess');
-        if (modal) {
-            modal.style.display = 'flex';
-            const titleEl = modal.querySelector('h2');
-            if (titleEl && isAutoSubmit) {
-                titleEl.textContent = '⌛ Süre Doldu! Sınavınız Gönderildi 🎉';
+        if (modalExamResults) {
+            modalExamResults.style.display = 'flex';
+            if (studentSuccessMsg) {
+                studentSuccessMsg.innerHTML = isAutoSubmit
+                    ? `⌛ Sınav süreniz doldu! <b>${studentInfo.name}</b>, cevaplarınız otomatik olarak öğretmeninize başarıyla ulaştırılmıştır.`
+                    : `Tebrikler <b>${studentInfo.name}</b>! Sınav yanıtlarınız öğretmeninize başarıyla ulaştırılmıştır.`;
             }
         } else {
             alert(isAutoSubmit ? '⌛ Sınav süreniz doldu ve cevaplarınız öğretmeninize gönderildi!' : '🎉 Tebrikler! Sınavınız başarıyla tamamlandı ve öğretmeninize gönderildi.');
         }
     }
 
-    function initExam() {
+    function initExam(startIdx = 0, preserveTimer = false) {
         isDrawerOpen = false;
         if (blocksDrawer) blocksDrawer.classList.remove('open');
         renderCategories();
-        loadQuestion(0);
+        loadQuestion(startIdx);
         setupDragAndDropEvents();
         setupCustomBlockModalEvents();
         setupBlocksDrawerEvents();
-        startExamTimer();
+        startExamTimer(preserveTimer);
+        saveExamProgressLocally();
+    }
+
+    // Oturum Geri Yükleme Kontrolü
+    function restoreExamSessionIfExists() {
+        try {
+            const raw = localStorage.getItem(EXAM_SESSION_STORAGE_KEY);
+            if (!raw) return false;
+            const saved = JSON.parse(raw);
+            if (!saved || !saved.studentInfo || !saved.studentInfo.name || !saved.studentInfo.name.trim()) return false;
+
+            studentInfo = saved.studentInfo;
+            if (saved.studentWiringScore) studentWiringScore = saved.studentWiringScore;
+            if (saved.studentAnswers) studentAnswers = saved.studentAnswers;
+
+            const restoredIndex = (typeof saved.currentQuestionIndex === 'number' && saved.currentQuestionIndex >= 0 && saved.currentQuestionIndex < questions.length)
+                ? saved.currentQuestionIndex : 0;
+
+            if (typeof saved.examTimeRemaining === 'number' && saved.examTimeRemaining > 0) {
+                examTimeRemaining = saved.examTimeRemaining;
+                isExtensionActive = !!saved.isExtensionActive;
+            }
+
+            if (modalStudentEntry) modalStudentEntry.style.display = 'none';
+            if (modalHardwareSetup) modalHardwareSetup.style.display = 'none';
+            if (studentPill) studentPill.style.display = 'flex';
+            if (studentInfoText) studentInfoText.textContent = `${studentInfo.name} - ${studentInfo.class}`;
+
+            initExam(restoredIndex, true);
+            showStudentToast('🔄 Oturum Geri Yüklendi', `${studentInfo.name}, sınavına kaldığın yerden (${restoredIndex + 1}. Soru) devam ediyorsun.`);
+            return true;
+        } catch (e) {
+            console.error('Oturum geri yükleme hatası:', e);
+            return false;
+        }
     }
 
     // 3. CATEGORY & DRAWER RENDERING
@@ -1690,13 +1765,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!q) return;
 
         if (q.type === 'paper_input') {
-            const inputVal = inputPaperAnswer ? inputPaperAnswer.value.trim() : '';
-            studentAnswers[q.id] = inputVal;
+            if (q.id === 'q5') {
+                saveTargetBoardAnswer();
+            } else {
+                const inputVal = inputPaperAnswer ? inputPaperAnswer.value.trim() : '';
+                studentAnswers[q.id] = inputVal;
+            }
+            saveExamProgressLocally();
             return;
         }
 
         if (q.type === 'pyramid') {
             // Pyramid answers are already live-synced in studentAnswers[q.id]
+            saveExamProgressLocally();
             return;
         }
 
@@ -1717,6 +1798,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         studentAnswers[q.id] = stacksDataList;
+        saveExamProgressLocally();
     }
 
     function renderSavedBlockData(savedB) {
@@ -1817,36 +1899,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset banner to open state so student reads instructions
         setBannerCollapsed(false);
 
-        // 1. SIMULATOR LOCK & AUTO-OPEN LOGIC
-        if (q.type === 'simulator') {
-            if (btnToggleSimulator) {
-                btnToggleSimulator.classList.remove('locked');
-                btnToggleSimulator.innerHTML = '🤖 Simülatör';
-                btnToggleSimulator.title = '2D Robot Simülatörünü Aç/Kapat';
-            }
-            if (btnOpenSimFromBanner) {
-                btnOpenSimFromBanner.style.display = 'inline-flex';
-            }
-            if (window.SpikeSimulator) {
-                const targetTrack = q.trackId || (q.id === 'q8' ? 'q8' : 'q7');
-                window.SpikeSimulator.loadTrack(targetTrack);
-                window.SpikeSimulator.toggleDrawer(true);
-            }
-            updateSimAttemptsUI(q.id);
-        } else {
-            if (btnToggleSimulator) {
-                btnToggleSimulator.classList.add('locked');
-                btnToggleSimulator.innerHTML = '🔒 Simülatör (7. Soruda Açılır)';
-                btnToggleSimulator.title = 'Simülatör sadece 7. ve 8. sorularda aktifleşir';
-            }
-            if (btnOpenSimFromBanner) {
-                btnOpenSimFromBanner.style.display = 'none';
-            }
-            if (window.SpikeSimulator) {
-                window.SpikeSimulator.toggleDrawer(false);
-            }
-        }
-
         // Toggle buttons for coding & sending
         if (btnToggleBanner) {
             btnToggleBanner.style.display = 'inline-flex';
@@ -1857,6 +1909,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. VIEW MODE TOGGLING (PAPER INPUT vs PYRAMID vs BLOCKS)
         if (q.type === 'paper_input') {
+            if (workspaceArea) workspaceArea.classList.add('layout-side-by-side');
             if (categorySidebar) categorySidebar.style.display = 'none';
             if (blocksDrawer) {
                 blocksDrawer.style.display = 'none';
@@ -1866,8 +1919,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (blockDropList) blockDropList.style.display = 'none';
             if (paperAnswerContainer) paperAnswerContainer.style.display = 'flex';
             if (pyramidAnswerContainer) pyramidAnswerContainer.style.display = 'none';
-            const topControls = document.querySelector('.canvas-top-controls');
-            if (topControls) topControls.style.display = 'none';
             if (hardwarePortMap) hardwarePortMap.style.display = 'none';
             if (btnClearCanvas) btnClearCanvas.style.display = 'none';
             if (trashZone) trashZone.style.display = 'none';
@@ -1888,6 +1939,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } else if (q.type === 'pyramid') {
+            if (workspaceArea) workspaceArea.classList.add('layout-side-by-side');
             if (categorySidebar) categorySidebar.style.display = 'none';
             if (blocksDrawer) {
                 blocksDrawer.style.display = 'none';
@@ -1897,14 +1949,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (blockDropList) blockDropList.style.display = 'none';
             if (paperAnswerContainer) paperAnswerContainer.style.display = 'none';
             if (pyramidAnswerContainer) pyramidAnswerContainer.style.display = 'flex';
-            const topControls = document.querySelector('.canvas-top-controls');
-            if (topControls) topControls.style.display = 'none';
             if (hardwarePortMap) hardwarePortMap.style.display = 'none';
             if (btnClearCanvas) btnClearCanvas.style.display = 'none';
             if (trashZone) trashZone.style.display = 'none';
 
             renderPyramidBoard(q.id);
         } else {
+            if (workspaceArea) workspaceArea.classList.remove('layout-side-by-side');
             if (categorySidebar) categorySidebar.style.display = 'flex';
             if (blocksDrawer) {
                 blocksDrawer.style.display = 'flex';
@@ -1915,11 +1966,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (blockDropList) blockDropList.style.display = 'flex';
             if (paperAnswerContainer) paperAnswerContainer.style.display = 'none';
             if (pyramidAnswerContainer) pyramidAnswerContainer.style.display = 'none';
-            const topControls = document.querySelector('.canvas-top-controls');
-            if (topControls) topControls.style.display = 'flex';
             if (hardwarePortMap) hardwarePortMap.style.display = 'flex';
             if (btnClearCanvas) btnClearCanvas.style.display = 'inline-flex';
-            if (trashZone) trashZone.style.display = 'flex';
+            if (trashZone) trashZone.style.display = 'block';
 
             clearCanvasUI();
             const savedAnswer = studentAnswers[q.id];
@@ -1990,6 +2039,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const v32 = parseInt(inp32?.value) || 0;
 
         studentAnswers['q5'] = `13x${v13} + 21x${v21} + 28x${v28} + 32x${v32} = 100`;
+        saveExamProgressLocally();
     }
 
     ['targetInput13', 'targetInput21', 'targetInput28', 'targetInput32'].forEach(id => {
@@ -2057,37 +2107,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function updateSimAttemptsUI(qId) {
-        const badge = document.getElementById('simAttemptsBadge');
-        const btnPlay = document.getElementById('btnSimPlay');
-        if (!qId) return;
-        const targetQ = questions.find(item => item.id === qId);
-        if (!targetQ || targetQ.type !== 'simulator') return;
-
-        const left = simAttemptsLeft[qId] !== undefined ? simAttemptsLeft[qId] : 3;
-
-        if (badge) {
-            badge.textContent = `${left} / 3 Hak`;
-            badge.className = 'attempt-pill';
-            if (left === 3) badge.classList.add('pill-green');
-            else if (left === 2) badge.classList.add('pill-yellow');
-            else if (left === 1) badge.classList.add('pill-orange');
-            else badge.classList.add('pill-red');
-        }
-
-        if (btnPlay) {
-            if (left > 0) {
-                btnPlay.disabled = false;
-                btnPlay.classList.remove('btn-disabled');
-                btnPlay.innerHTML = `▶ Kodu Simüle Et <span class="sim-attempts-tag" id="btnSimAttemptsTag">(${left}/3 Hak)</span>`;
-            } else {
-                btnPlay.disabled = true;
-                btnPlay.classList.add('btn-disabled');
-                btnPlay.innerHTML = `🚫 Simülasyon Hakkı Bitti (0/3)`;
-            }
-        }
-    }
-
     window.loadQuestion = loadQuestion;
     window.initExam = initExam;
     window.createBlockElement = createBlockElement;
@@ -2103,6 +2122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnPrevQuestion.addEventListener('click', () => {
         if (currentQuestionIndex > 0) {
             saveCurrentQuestionState();
+            sendExamDataToGoogleSheet(false);
             loadQuestion(currentQuestionIndex - 1);
         }
     });
@@ -2110,6 +2130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnNextQuestion.addEventListener('click', () => {
         if (currentQuestionIndex < questions.length - 1) {
             saveCurrentQuestionState();
+            sendExamDataToGoogleSheet(false);
             showStudentToast(
                 '✓ Yanıtınız Kaydedildi',
                 `${currentQuestionIndex + 1}. Soru yanıtınız başarıyla kaydedildi. Sıradaki soruya geçiliyor.`
@@ -2277,6 +2298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnClearPyramid) {
             btnClearPyramid.onclick = () => {
                 studentAnswers[questionId] = { selections: {}, path: [], text: '(Henüz bir yol seçilmedi)', isCorrect: false };
+                saveExamProgressLocally();
                 renderPyramidBoard(questionId);
             };
         }
@@ -2332,6 +2354,7 @@ document.addEventListener('DOMContentLoaded', () => {
             text: pathText,
             isCorrect: isCorrect
         };
+        saveExamProgressLocally();
 
         // Update active row nodes UI
         const rowEl = pyramidRowsContainer.querySelector(`.pyramid-row[data-row="${row}"]`);
@@ -2451,13 +2474,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // AUTOMATED GOOGLE SHEETS WEBHOOK SUBMISSION
-    function sendExamDataToGoogleSheet() {
+    // AUTOMATED GOOGLE SHEETS WEBHOOK SUBMISSION (PROGRESSIVE / INCREMENTAL & FINAL)
+    function sendExamDataToGoogleSheet(isFinal = false) {
         const webhookUrl = getGoogleSheetWebhookUrl();
         if (!webhookUrl || webhookUrl.trim() === '') {
             console.log('Google Sheets Webhook URL yapılandırılmadı. Gönderim atlandı.');
             return;
         }
+
+        if (!studentInfo || !studentInfo.name || !studentInfo.name.trim()) {
+            return;
+        }
+
+        if (!studentInfo.sessionId) {
+            studentInfo.sessionId = generateSessionId();
+        }
+
+        // Aktif sorunun son durumunu belleğe garanti aktar
+        saveCurrentQuestionState();
 
         const q1CodeText = formatBlocksToCleanText(studentAnswers['q1'] || []);
         const q2CodeText = formatBlocksToCleanText(studentAnswers['q2'] || []);
@@ -2474,15 +2508,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const q4Text = studentAnswers['q4'] || '(Yanıt verilmedi)';
         const q5Text = studentAnswers['q5'] || '(Yanıt verilmedi)';
         const q6Text = studentAnswers['q6'] || '(Yanıt verilmedi)';
-        const q7CodeText = formatBlocksToCleanText(studentAnswers['q7'] || []);
-        const q8CodeText = formatBlocksToCleanText(studentAnswers['q8'] || []);
+
+        const currentQNum = currentQuestionIndex + 1;
+        const examStatus = isFinal ? 'TAMAMLANDI' : `DEVAM EDİYOR (Soru ${currentQNum}/6)`;
 
         const payload = {
+            sessionId: studentInfo.sessionId,
+            isFinal: !!isFinal,
+            examStatus: examStatus,
+            currentQuestionNum: currentQNum,
             timestamp: new Date().toLocaleString('tr-TR'),
             studentName: studentInfo.name,
             studentClass: studentInfo.class,
-            secretDurationSec: studentWiringScore.durationSeconds,
-            secretHardwarePoints: studentWiringScore.points, // 10 Puan veya yavaşsa 5 Puan
+            secretDurationSec: studentWiringScore.durationSeconds || 0,
+            secretHardwarePoints: studentWiringScore.points || 10,
             q1Answer: q1CodeText,
             q2Answer: q2CodeText,
             q3Answer: q3Text,
@@ -2490,45 +2529,40 @@ document.addEventListener('DOMContentLoaded', () => {
             q4Answer: q4Text,
             q5Answer: q5Text,
             q6Answer: q6Text,
-            q7Answer: q7CodeText,
-            q8Answer: q8CodeText,
-            q7SimAttemptsUsed: simAttemptsUsed['q7'] || 0,
-            q8SimAttemptsUsed: simAttemptsUsed['q8'] || 0,
             q1Json: JSON.stringify(studentAnswers['q1'] || []),
             q2Json: JSON.stringify(studentAnswers['q2'] || []),
             q3Json: JSON.stringify(studentAnswers['q3'] || {}),
-            q7Json: JSON.stringify(studentAnswers['q7'] || []),
-            q8Json: JSON.stringify(studentAnswers['q8'] || [])
+            q4Json: JSON.stringify(studentAnswers['q4'] || ''),
+            q5Json: JSON.stringify(studentAnswers['q5'] || ''),
+            q6Json: JSON.stringify(studentAnswers['q6'] || '')
         };
 
-        fetch(webhookUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        }).then(() => {
-            console.log('Sınav verileri Google E-Tabloya başarıyla gönderildi.');
-        }).catch(err => {
-            console.error('E-Tabloya gönderim hatası:', err);
-        });
-    }
-
-    // 9. CLEAN STUDENT COMPLETION MODAL & RESET FOR NEXT STUDENT
-    function showExamSuccessModal() {
-        modalExamResults.style.display = 'flex';
-        studentSuccessMsg.innerHTML = `Tebrikler <b>${studentInfo.name}</b>! Sınav yanıtlarınız öğretmeninize başarıyla ulaştırılmıştır.`;
+        try {
+            fetch(webhookUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                keepalive: true,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                console.log(`[E-Tablo Senkronizasyon] Durum: ${examStatus} (${studentInfo.name})`);
+            }).catch(err => {
+                console.warn('E-Tabloya arka plan senkronizasyon uyarısı:', err);
+            });
+        } catch (e) {
+            console.warn('Fetch senkronizasyon hatası:', e);
+        }
     }
 
     btnReturnToStart.addEventListener('click', () => {
+        clearLocalExamSession();
         modalExamResults.style.display = 'none';
         studentAnswers = {};
         currentQuestionIndex = 0;
-        studentInfo = { name: '', class: '' };
+        studentInfo = { name: '', class: '', sessionId: '' };
         isTeacherDemoMode = false;
-        simAttemptsLeft = { 'q7': 3, 'q8': 3 };
-        simAttemptsUsed = { 'q7': 0, 'q8': 0 };
         studentWiringScore = { durationSeconds: 0, points: 10 };
         document.getElementById('inputStudentName').value = '';
         document.getElementById('inputStudentClass').value = '';
@@ -2541,113 +2575,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================================
-    // 10. 2D SİMÜLATÖR VE ÖĞRETMEN İNCELEME PANELİ BAĞLANTISI
+    // 10. ÖĞRETMEN İNCELEME PANELİ KONTROLLERİ
     // ==========================================================
-    if (window.SpikeSimulator) {
-        window.SpikeSimulator.init('simCanvas', {
-            btnPlay: 'btnSimPlay',
-            btnReset: 'btnSimReset',
-            btnToggle: 'btnToggleSimulator',
-            btnClose: 'btnCloseSimulator',
-            drawer: 'simDrawer',
-            badgeMission: 'simMissionBadge',
-            pillColor: 'simPillColor',
-            txtDistance: 'simTxtDistance',
-            txtHeading: 'simTxtHeading',
-            txtMotors: 'simTxtMotors',
-            btnSubmitCode: 'btnSimSubmitCode',
-            trackSelector: 'simTrackSelect'
-        });
-
-        // Guard: simulator can only be opened on Question 7 and 8 (simulator questions)
-        window.onSimulatorCanToggle = () => {
-            const q = questions[currentQuestionIndex];
-            if (q && q.type !== 'simulator') {
-                alert('Robotik Simülatör pisti sadece 7. ve 8. sorularda (Simülasyon etabı) açılacaktır! Lütfen önce bu soruyu tamamlayınız.');
-                return false;
-            }
-            return true;
-        };
-
-        if (btnOpenSimFromBanner) {
-            btnOpenSimFromBanner.addEventListener('click', () => {
-                if (window.SpikeSimulator) {
-                    window.SpikeSimulator.toggleDrawer(true);
-                }
-            });
-        }
-
-        // Run hook called when student or teacher clicks "▶ Kodu Simüle Et"
-        window.onSimulatorRequestRun = () => {
-            saveCurrentQuestionState();
-            const q = questions[currentQuestionIndex];
-            if (!q || q.type !== 'simulator') return;
-
-            const savedStackList = studentAnswers[q.id] || [];
-            
-            if (savedStackList.length === 0 || !savedStackList[0].blocks || savedStackList[0].blocks.length === 0) {
-                window.SpikeSimulator.setMissionStatus('Çalışma alanında kod bloku yok!', 'warning');
-                return;
-            }
-
-            // HAK KONTROLÜ (Her simülasyon sorusu için 3 deneme hakkı)
-            if (simAttemptsLeft[q.id] === undefined) simAttemptsLeft[q.id] = 3;
-            if (simAttemptsUsed[q.id] === undefined) simAttemptsUsed[q.id] = 0;
-            if (!isTeacherDemoMode) {
-                if (simAttemptsLeft[q.id] <= 0) {
-                    showStudentToast(
-                        '⚠️ Simülasyon Hakkınız Doldu!',
-                        'Bu soru için belirlenen 3 deneme hakkınızı tamamladınız. Kodunuz kaydedildi, sınavınıza sıradaki soruya geçerek devam edebilirsiniz.'
-                    );
-                    updateSimAttemptsUI(q.id);
-                    return;
-                }
-
-                simAttemptsLeft[q.id]--;
-                simAttemptsUsed[q.id]++;
-                updateSimAttemptsUI(q.id);
-                showStudentToast('Simülasyon Başlatıldı', `Bu soru için kalan deneme hakkınız: ${simAttemptsLeft[q.id]} / 3`);
-            }
-
-            // Make sure drawer is open
-            window.SpikeSimulator.toggleDrawer(true);
-            // Execute main stack blocks in simulator
-            window.SpikeSimulator.executeBlocks(savedStackList[0].blocks);
-        };
-
-        window.onSimulatorFinishState = () => {
-            const q = questions[currentQuestionIndex];
-            if (q && q.type === 'simulator') {
-                updateSimAttemptsUI(q.id);
-            }
-        };
-    }
-
-
-
-    // Simulator Canvas Snapshot (PNG Download)
-    const btnSimSnapshot = document.getElementById('btnSimSnapshot');
-    if (btnSimSnapshot) {
-        btnSimSnapshot.addEventListener('click', () => {
-            if (!window.SpikeSimulator) return;
-            const dataUrl = window.SpikeSimulator.takeSnapshot();
-            if (!dataUrl) return;
-            const a = document.createElement('a');
-            a.href = dataUrl;
-            a.download = `spike-simulasyon-${studentInfo.name ? studentInfo.name.replace(/\s+/g, '_') : 'robot'}-${Date.now()}.png`;
-            a.click();
-        });
-    }
-
-    // TEACHER REVIEW MODAL CONTROLS
     const modalTeacherReview = document.getElementById('modalTeacherReview');
     const btnOpenTeacherReview = document.getElementById('btnOpenTeacherReview');
     const btnCloseTeacherModal = document.getElementById('btnCloseTeacherModal');
     const btnTeacherLoadCurrent = document.getElementById('btnTeacherLoadCurrent');
-    const btnTeacherCaptureWorkspace = document.getElementById('btnTeacherCaptureWorkspace');
     const teacherCodeInput = document.getElementById('teacherCodeInput');
     const teacherFeedback = document.getElementById('teacherFeedback');
-    const btnTeacherApplyAndSim = document.getElementById('btnTeacherApplyAndSim');
+    const btnTeacherApply = document.getElementById('btnTeacherApply');
 
     if (btnOpenTeacherReview && modalTeacherReview) {
         btnOpenTeacherReview.addEventListener('click', () => {
@@ -2676,14 +2612,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (btnTeacherCaptureWorkspace) {
-        btnTeacherCaptureWorkspace.addEventListener('click', () => {
-            if (btnSimSnapshot) btnSimSnapshot.click();
-        });
-    }
-
-    if (btnTeacherApplyAndSim) {
-        btnTeacherApplyAndSim.addEventListener('click', () => {
+    if (btnTeacherApply) {
+        btnTeacherApply.addEventListener('click', () => {
             const rawVal = teacherCodeInput.value.trim();
             if (!rawVal) {
                 alert('Lütfen öğrenciye ait geçerli bir kod verisi (JSON) yapıştırınız.');
@@ -2712,20 +2642,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 updatePlaceholderVisibility();
                 saveCurrentQuestionState();
 
-                // Close teacher modal, open simulator, and auto-run
+                // Close teacher modal and notify
                 modalTeacherReview.style.display = 'none';
-                if (window.SpikeSimulator) {
-                    window.SpikeSimulator.toggleDrawer(true);
-                    window.SpikeSimulator.reset();
-                    setTimeout(() => {
-                        if (parsed[0] && parsed[0].blocks) {
-                            window.SpikeSimulator.executeBlocks(parsed[0].blocks);
-                        }
-                    }, 400);
-                }
+                showStudentToast('✓ Kod Tuvale Yüklendi', 'Öğrencinin kod blokları çalışma alanına aktarıldı.');
             } catch (e) {
                 alert('Yapıştırılan kod verisi geçerli bir JSON yapısında değil!\n' + e.message);
             }
         });
+    }
+
+    // BEFOREUNLOAD PERSISTENCE (Ani sekme kapatma / internet kopması / F5 durumunda anında yedekle ve gönder)
+    window.addEventListener('beforeunload', () => {
+        if (studentInfo && studentInfo.name && studentInfo.name.trim()) {
+            saveCurrentQuestionState();
+            saveExamProgressLocally();
+            sendExamDataToGoogleSheet(false);
+        }
+    });
+
+    // AUTOMATED TESTING / VERIFICATION HOOK (Runs only when ?test_q= is present in URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('test_q')) {
+        const qIdx = parseInt(urlParams.get('test_q'), 10);
+        studentInfo = { name: 'Ahmet Yılmaz (Test)', class: '6-A', sessionId: generateSessionId() };
+        if (modalStudentEntry) modalStudentEntry.style.display = 'none';
+        if (modalHardwareSetup) modalHardwareSetup.style.display = 'none';
+        if (studentPill) studentPill.style.display = 'flex';
+        if (studentInfoText) studentInfoText.textContent = `${studentInfo.name} - ${studentInfo.class}`;
+        initExam();
+        if (!isNaN(qIdx) && qIdx >= 0 && qIdx < questions.length) {
+            loadQuestion(qIdx);
+        }
+    } else {
+        // Normal başlatma: Eğer daha önce yarım kalmış bir sınav oturumu varsa geri yükle
+        restoreExamSessionIfExists();
     }
 });

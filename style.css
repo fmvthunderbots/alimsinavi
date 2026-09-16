@@ -553,18 +553,20 @@ div[class*="used-numbers"] {
     color: #1e293b;
 }
 
-/* CANVAS KONTROLLERİ (SAĞ ÜST SİLME ALANI & SAĞ ALT HEPSİNİ SİL) */
-.canvas-container {
-    position: relative !important;
+/* SAĞ ALT KONTROL VE SİLME ALANI (TRASH ZONE & HEPSİNİ SİL) */
+.canvas-bottom-right-controls {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: auto;
 }
 
-/* BLOĞU SİLME ALANI (SAĞ ÜST) */
 .trash-zone {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    z-index: 50;
-    background-color: rgba(254, 226, 226, 0.96);
+    background-color: rgba(254, 226, 226, 0.95);
     border: 2px dashed #f87171;
     color: #dc2626;
     font-size: 0.82rem;
@@ -572,41 +574,39 @@ div[class*="used-numbers"] {
     padding: 8px 16px;
     border-radius: var(--radius-md);
     backdrop-filter: blur(6px);
-    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.18);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
     transition: all 0.2s ease;
     white-space: nowrap;
     display: flex;
     align-items: center;
     gap: 6px;
-    margin: 0;
 }
 
 .trash-zone.drag-over {
-    background-color: #fee2e2 !important;
-    border-color: #b91c1c !important;
-    color: #b91c1c !important;
-    transform: scale(1.05) !important;
-    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35) !important;
+    background-color: #fee2e2;
+    border-color: #b91c1c;
+    color: #b91c1c;
+    transform: scale(1.05);
+    box-shadow: 0 6px 18px rgba(220, 38, 38, 0.3);
 }
 
 .btn-clear-canvas {
-    background-color: rgba(255, 255, 255, 0.96);
+    background-color: rgba(255, 255, 255, 0.95);
     border: 1.5px solid #fca5a5;
     color: #dc2626;
     font-family: var(--font-primary);
     font-weight: 800;
     font-size: 0.82rem;
-    padding: 6px 14px;
+    padding: 7px 14px;
     border-radius: var(--radius-md);
     cursor: pointer;
     backdrop-filter: blur(6px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 5px;
     white-space: nowrap;
-    margin: 0;
 }
 
 .btn-clear-canvas:hover {
@@ -828,11 +828,6 @@ div[class*="used-numbers"] {
     color: #475569;
 }
 
-.status-badge.ok {
-    color: #059669;
-}
-
-/* CANVAS AREA */
 .canvas-container {
     flex: 1 1 auto;
     min-height: 0;
@@ -849,27 +844,6 @@ div[class*="used-numbers"] {
     background-size: 24px 24px;
     opacity: 0.6;
     pointer-events: none;
-}
-
-.trash-zone {
-    position: absolute;
-    top: 16px;
-    right: 20px;
-    background-color: rgba(239, 68, 68, 0.1);
-    border: 2px dashed #ef4444;
-    color: #dc2626;
-    padding: 10px 16px;
-    border-radius: var(--radius-md);
-    font-size: 0.82rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    z-index: 10;
-}
-
-.trash-zone.drag-over {
-    background-color: #ef4444;
-    color: #ffffff;
-    transform: scale(1.05);
 }
 
 /* NASIL KODLAMA YAPILIR? BİLGİ KARTI VE ÇAKIŞMA ENGELLEYİCİ */
@@ -1355,8 +1329,8 @@ input[type="text"].block-input-pill {
 }
 
 .option-icon {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     background-color: #dc2626;
     color: #fff;
     margin-bottom: 8px;
@@ -1496,7 +1470,7 @@ input[type="text"].block-input-pill {
     font-family: var(--font-primary);
     font-weight: 700;
     font-size: 0.82rem;
-    height: 36px;
+    height: 30px;
     padding: 0 12px;
     border-radius: var(--radius-md);
     border: none;
@@ -2017,7 +1991,7 @@ input[type="text"].block-input-pill {
     flex: 1;
     font-weight: 700;
     font-size: 0.80rem;
-    height: 36px;
+    height: 30px;
     padding: 0 8px;
     border-radius: 8px;
     white-space: nowrap !important;
@@ -2054,7 +2028,7 @@ input[type="text"].block-input-pill {
     border: none;
     font-weight: 700;
     font-size: 0.82rem;
-    height: 36px;
+    height: 30px;
     padding: 0 12px;
     border-radius: var(--radius-md);
     cursor: pointer;
@@ -2583,7 +2557,7 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding: 24px 16px;
+    padding: 10px 8px;
     overflow-y: auto;
     z-index: 5;
     position: relative;
@@ -2594,7 +2568,7 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
     background: #ffffff;
     border: 2px solid #e2e8f0;
     border-radius: 16px;
-    padding: 24px 28px;
+    padding: 10px 14px;
     max-width: 840px;
     width: 100%;
     box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06), 0 8px 10px -6px rgba(0,0,0,0.04);
@@ -2603,23 +2577,23 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
 .pyramid-card-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 10px;
+    margin-bottom: 6px;
 }
 
 .pyramid-badge {
     background: #fdf2f8;
     color: #db2777;
-    font-size: 0.72rem;
+    font-size: 0.65rem;
     font-weight: 800;
-    padding: 4px 10px;
+    padding: 3px 8px;
     border-radius: 9999px;
     letter-spacing: 0.4px;
 }
 
 .pyramid-card-header h3 {
     font-family: var(--font-display, sans-serif);
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: #0f172a;
     margin: 0;
@@ -2698,19 +2672,19 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
 }
 
 .pyramid-instruction-tip {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: #0f172a;
     background: #fffbeb;
     border: 1.5px solid #fef3c7;
     border-left: 4px solid #f59e0b;
-    padding: 9px 14px;
+    padding: 6px 10px;
     border-radius: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     text-align: center;
     width: 100%;
     box-sizing: border-box;
@@ -2738,7 +2712,7 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 7px;
+    gap: 5px;
     position: relative;
     z-index: 2;
 }
@@ -2746,17 +2720,17 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
 .pyramid-row {
     display: flex;
     justify-content: center;
-    gap: 7px;
+    gap: 5px;
 }
 
 .pyramid-node {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background: #ffffff;
     border: 2px solid #0f172a;
     font-family: var(--font-display, sans-serif);
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 800;
     color: #0f172a;
     display: inline-flex;
@@ -2788,10 +2762,10 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
     background: #f8fafc;
     border: 1.5px solid #e2e8f0;
     border-radius: 12px;
-    padding: 14px 18px;
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
 }
 
 .pyramid-status-row {
@@ -2802,7 +2776,7 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
 }
 
 .status-label {
-    font-size: 0.83rem;
+    font-size: 0.75rem;
     font-weight: 800;
     color: #475569;
     min-width: 125px;
@@ -2810,11 +2784,11 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
 
 .path-text {
     font-family: monospace;
-    font-size: 0.92rem;
+    font-size: 0.85rem;
     font-weight: 800;
     color: #dc2626;
     background: #ffffff;
-    padding: 4px 10px;
+    padding: 3px 8px;
     border-radius: 6px;
     border: 1px solid #e2e8f0;
 }
@@ -2885,61 +2859,43 @@ body.is-dragging-block .reporter-drop-zone select { pointer-events: none; }
     color: #10b981;
 }
 
-/* --- HEDEF TAHTASI INPUT GRID (SORU 5) --- */
-.target-inputs-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 10px;
+/* --- SIDE-BY-SIDE LAYOUT (MANTIK SORULARI) --- */
+.workspace-area.layout-side-by-side {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr auto;
 }
 
-.target-input-card {
-    background-color: #f8fafc;
-    border: 1px solid #cbd5e1;
-    border-radius: var(--radius-md);
-    padding: 10px 14px;
+.workspace-area.layout-side-by-side .question-banner {
+    grid-column: 1;
+    grid-row: 1;
+    max-height: none !important;
+    height: 100%;
+    border-bottom: none;
+    border-right: 1px solid var(--border-light);
+}
+
+.workspace-area.layout-side-by-side .canvas-container {
+    grid-column: 2;
+    grid-row: 1;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    flex: 1;
-    min-width: 140px;
+    padding: 10px;
 }
 
-.target-chip {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+.workspace-area.layout-side-by-side .workspace-footer {
+    grid-column: 1 / span 2;
+    grid-row: 2;
 }
 
-.target-input-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* When side-by-side, we hide the banner toggle */
+.workspace-area.layout-side-by-side .btn-banner-toggle {
+    display: none !important;
 }
 
-.target-num-input {
-    width: 60px;
-    padding: 6px 8px;
-    border: 1px solid #cbd5e1;
-    border-radius: var(--radius-sm);
-    font-size: 1rem;
-    font-weight: 700;
-    text-align: center;
-    outline: none;
-    transition: all 0.2s ease;
+/* Also ensure the question content is always visible */
+.workspace-area.layout-side-by-side .question-details-content {
+    display: block !important;
 }
 
-.target-num-input:focus {
-    border-color: #0284c7;
-    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
-}
-
-.target-input-row .unit-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #64748b;
-}
